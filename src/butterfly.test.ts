@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveColors } from "./butterfly";
+import { deriveColors, deriveSurfaceElevation } from "./butterfly";
 import { hexToOklch, contrastRatio } from "./color-math";
 import { expectValidHex } from "./test-helpers";
 
@@ -237,6 +237,65 @@ describe("deriveColors - edge cases", () => {
     const colors = deriveColors("#ff0000", "light");
     for (const value of Object.values(colors)) {
       expectValidHex(value);
+    }
+  });
+});
+
+// ─── deriveSurfaceElevation ─────────────────────────────────────────
+
+describe("deriveSurfaceElevation", () => {
+  const lightColors = deriveColors(PRIMARY, "light");
+  const darkColors = deriveColors(PRIMARY, "dark");
+  const lightElevation = deriveSurfaceElevation(lightColors.surface, lightColors.primary, "light");
+  const darkElevation = deriveSurfaceElevation(darkColors.surface, darkColors.primary, "dark");
+  const keys = ["card", "elevated", "modal", "popover"] as const;
+
+  it("returns all 4 elevation keys", () => {
+    for (const key of keys) {
+      expect(lightElevation).toHaveProperty(key);
+      expect(darkElevation).toHaveProperty(key);
+    }
+  });
+
+  it("all values are valid hex", () => {
+    for (const key of keys) {
+      expectValidHex(lightElevation[key]);
+      expectValidHex(darkElevation[key]);
+    }
+  });
+
+  it("dark mode: each level is progressively lighter", () => {
+    const l = keys.map((k) => hexToOklch(darkElevation[k]).L);
+    for (let i = 1; i < l.length; i++) {
+      expect(l[i]).toBeGreaterThan(l[i - 1]);
+    }
+  });
+
+  it("dark mode: all levels are lighter than base surface", () => {
+    const surfaceL = hexToOklch(darkColors.surface).L;
+    for (const key of keys) {
+      expect(hexToOklch(darkElevation[key]).L).toBeGreaterThan(surfaceL);
+    }
+  });
+
+  it("light mode: all levels differ from base surface", () => {
+    for (const key of keys) {
+      expect(lightElevation[key]).not.toBe(lightColors.surface);
+    }
+  });
+
+  it("light mode: higher levels have more primary tint (higher chroma)", () => {
+    const c = keys.map((k) => hexToOklch(lightElevation[k]).C);
+    for (let i = 1; i < c.length; i++) {
+      expect(c[i]).toBeGreaterThanOrEqual(c[i - 1]);
+    }
+  });
+
+  it("works with achromatic primary", () => {
+    const colors = deriveColors("#808080", "dark");
+    const elev = deriveSurfaceElevation(colors.surface, colors.primary, "dark");
+    for (const key of keys) {
+      expectValidHex(elev[key]);
     }
   });
 });
