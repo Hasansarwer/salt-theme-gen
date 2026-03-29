@@ -42,11 +42,11 @@ describe("generateTheme - defaults", () => {
     expect(theme.light.fontSizes).toEqual(FONT_SIZE_PRESETS.default);
   });
 
-  it("light.colors has all 17 keys", () => {
+  it("light.colors has all 19 keys", () => {
     const keys = [
-      "primary", "secondary", "background", "surface", "text",
+      "primary", "secondary", "tertiary", "background", "surface", "text",
       "muted", "border", "danger", "success", "warning", "info",
-      "onPrimary", "onSecondary", "onDanger", "onSuccess", "onWarning", "onInfo",
+      "onPrimary", "onSecondary", "onTertiary", "onDanger", "onSuccess", "onWarning", "onInfo",
     ];
     for (const key of keys) {
       expect(theme.light.colors).toHaveProperty(key);
@@ -207,8 +207,8 @@ describe("generateTheme - output structure", () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it("states object has 6 intents with 4 states each", () => {
-    const intents = ["primary", "secondary", "danger", "success", "warning", "info"];
+  it("states object has 7 intents with 4 states each", () => {
+    const intents = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"];
     const stateKeys = ["hover", "pressed", "focused", "disabled"];
     for (const intent of intents) {
       for (const state of stateKeys) {
@@ -217,8 +217,8 @@ describe("generateTheme - output structure", () => {
     }
   });
 
-  it("accessibility object has 14 entries", () => {
-    expect(Object.keys(theme.light.accessibility)).toHaveLength(14);
+  it("accessibility object has 16 entries", () => {
+    expect(Object.keys(theme.light.accessibility)).toHaveLength(16);
   });
 
   it("all color values in output match hex format", () => {
@@ -237,6 +237,7 @@ describe("generateTheme - WCAG compliance", () => {
   const onColorPairs = [
     ["onPrimary", "primary"],
     ["onSecondary", "secondary"],
+    ["onTertiary", "tertiary"],
     ["onDanger", "danger"],
     ["onSuccess", "success"],
     ["onWarning", "warning"],

@@ -10,18 +10,18 @@ const PRIMARY = "#1e90ff"; // dodger blue
 describe("deriveColors - light mode", () => {
   const colors = deriveColors(PRIMARY, "light");
 
-  it("returns object with all 17 SemanticColors keys", () => {
+  it("returns object with all 19 SemanticColors keys", () => {
     const expectedKeys = [
-      "primary", "secondary", "background", "surface", "text",
+      "primary", "secondary", "tertiary", "background", "surface", "text",
       "muted", "border", "danger", "success", "warning", "info",
-      "onPrimary", "onSecondary", "onDanger", "onSuccess", "onWarning", "onInfo",
+      "onPrimary", "onSecondary", "onTertiary", "onDanger", "onSuccess", "onWarning", "onInfo",
     ];
     for (const key of expectedKeys) {
       expect(colors).toHaveProperty(key);
     }
   });
 
-  it("all 17 values are valid hex strings", () => {
+  it("all 19 values are valid hex strings", () => {
     for (const value of Object.values(colors)) {
       expectValidHex(value);
     }
@@ -44,6 +44,19 @@ describe("deriveColors - light mode", () => {
     const primaryLch = hexToOklch(PRIMARY);
     const secondaryLch = hexToOklch(colors.secondary);
     expect(secondaryLch.C).toBeCloseTo(primaryLch.C * 0.85, 1);
+  });
+
+  it("tertiary hue uses 2x secondary offset from primary", () => {
+    const primaryLch = hexToOklch(colors.primary);
+    const tertiaryLch = hexToOklch(colors.tertiary);
+    const expectedH = (primaryLch.H + 2 * secondaryHueOffset(primaryLch.H)) % 360;
+    expect(tertiaryLch.H).toBeCloseTo(expectedH, 0);
+  });
+
+  it("tertiary chroma is approximately primaryC * 0.75", () => {
+    const primaryLch = hexToOklch(PRIMARY);
+    const tertiaryLch = hexToOklch(colors.tertiary);
+    expect(tertiaryLch.C).toBeCloseTo(primaryLch.C * 0.75, 1);
   });
 
   it("background has L approximately 0.97", () => {
@@ -170,6 +183,36 @@ describe("deriveColors - secondary override", () => {
     const colors = deriveColors(PRIMARY, "dark", "#00ff00");
     expect(colors.secondary).toBe("#00ff00");
     expectValidHex(colors.onSecondary);
+  });
+});
+
+// ─── deriveColors — tertiary override ────────────────────────────────
+
+describe("deriveColors - tertiary override", () => {
+  it("tertiary matches override when provided", () => {
+    const colors = deriveColors(PRIMARY, "light", undefined, "#ff8800");
+    expect(colors.tertiary).toBe("#ff8800");
+  });
+
+  it("other colors are unaffected by tertiary override", () => {
+    const withOverride = deriveColors(PRIMARY, "light", undefined, "#ff8800");
+    const without = deriveColors(PRIMARY, "light");
+    expect(withOverride.primary).toBe(without.primary);
+    expect(withOverride.secondary).toBe(without.secondary);
+    expect(withOverride.background).toBe(without.background);
+  });
+
+  it("onTertiary is derived from the overridden color", () => {
+    const colors = deriveColors(PRIMARY, "light", undefined, "#ff8800");
+    expectValidHex(colors.onTertiary);
+    const noOverride = deriveColors(PRIMARY, "light");
+    expect(colors.onTertiary).not.toBe(noOverride.onTertiary);
+  });
+
+  it("works in dark mode with override", () => {
+    const colors = deriveColors(PRIMARY, "dark", undefined, "#00ff00");
+    expect(colors.tertiary).toBe("#00ff00");
+    expectValidHex(colors.onTertiary);
   });
 });
 

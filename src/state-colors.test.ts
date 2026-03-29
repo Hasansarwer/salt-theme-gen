@@ -105,9 +105,9 @@ describe("deriveStateColors", () => {
 describe("deriveAllIntentStates", () => {
   const colors = deriveColors("#1e90ff", "light");
   const allStates = deriveAllIntentStates(colors);
-  const intents = ["primary", "secondary", "danger", "success", "warning", "info"] as const;
+  const intents = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"] as const;
 
-  it("returns object with all 6 intent keys", () => {
+  it("returns object with all 7 intent keys", () => {
     for (const intent of intents) {
       expect(allStates).toHaveProperty(intent);
     }
@@ -122,12 +122,12 @@ describe("deriveAllIntentStates", () => {
     }
   });
 
-  it("total of 24 state color values", () => {
+  it("total of 28 state color values", () => {
     let count = 0;
     for (const intent of intents) {
       count += Object.keys(allStates[intent]).length;
     }
-    expect(count).toBe(24);
+    expect(count).toBe(28);
   });
 
   it("all hover values are valid hex strings", () => {
