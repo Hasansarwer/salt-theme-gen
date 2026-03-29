@@ -559,3 +559,43 @@ describe("setChroma", () => {
     expect(lch.C).toBeCloseTo(0.1, 2);
   });
 });
+
+// ─── mix ─────────────────────────────────────────────────────────────
+
+describe("mix", () => {
+  it("ratio=0 returns color1", () => {
+    expectCloseHex(mix("#ff0000", "#0000ff", 0), "#ff0000");
+  });
+
+  it("ratio=1 returns color2", () => {
+    expectCloseHex(mix("#ff0000", "#0000ff", 1), "#0000ff");
+  });
+
+  it("ratio=0.5 produces a midpoint color", () => {
+    const mid = mix("#000000", "#ffffff", 0.5);
+    const lch = hexToOklch(mid);
+    const l1 = hexToOklch("#000000").L;
+    const l2 = hexToOklch("#ffffff").L;
+    expect(lch.L).toBeCloseTo((l1 + l2) / 2, 1);
+  });
+
+  it("result is always a valid hex", () => {
+    expectValidHex(mix("#1e90ff", "#ff6347", 0.25));
+    expectValidHex(mix("#1e90ff", "#ff6347", 0.75));
+  });
+
+  it("mixing a color with itself returns the same color", () => {
+    expectCloseHex(mix("#1e90ff", "#1e90ff", 0.5), "#1e90ff");
+  });
+
+  it("hue interpolation takes shortest arc", () => {
+    // H=10 and H=350 are 20° apart across 0, not 340° apart the long way
+    const result = hexToOklch(mix(
+      oklchToHex({ L: 0.5, C: 0.1, H: 10 }),
+      oklchToHex({ L: 0.5, C: 0.1, H: 350 }),
+      0.5
+    ));
+    // Midpoint should be near H=0/360, not near H=180
+    expect(result.H % 360).toBeLessThan(20);
+  });
+});
