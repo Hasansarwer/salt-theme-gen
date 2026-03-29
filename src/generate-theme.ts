@@ -43,9 +43,12 @@ export function generateTheme(options: GenerateThemeOptions = {}): GeneratedThem
   // 1. Resolve primary color
   const primaryHex = resolvePrimary(options);
 
-  // 2. Resolve secondary override
+  // 2. Resolve color overrides
   const secondaryOverride = options.secondary
     ? parseColor(options.secondary)
+    : undefined;
+  const tertiaryOverride = options.tertiary
+    ? parseColor(options.tertiary)
     : undefined;
 
   // 3. Resolve scales
