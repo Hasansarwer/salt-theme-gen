@@ -26,35 +26,84 @@ export function deriveOnColor(backgroundHex: string): string {
 }
 
 /**
- * Gradient descent on OKLCH L channel to find the closest color
- * that meets the minimum contrast ratio. Provably optimal in
- * perceptual space — minimal visual shift while meeting accessibility.
+ * Binary search on OKLCH L channel to find the closest color that meets
+ * the minimum contrast ratio. Tries both directions (lighten and darken)
+ * and picks the result with the smallest perceptual shift.
+ *
+ * 25 iterations of binary search gives precision < 0.00001 in L, which
+ * is far better than the previous 0.01-step linear walk.
  */
 export function autoCorrectContrast(
   foreground: string,
   background: string,
   minRatio: number = 4.5
 ): string {
-  const bgLum = relativeLuminance(background);
   const fgLch = hexToOklch(foreground);
+  const bgLum = relativeLuminance(background);
 
-  // Determine direction: if bg is dark, lighten fg; if bg is light, darken fg
-  const shouldLighten = bgLum < 0.5;
+  // Try both directions: lighten and darken
+  const candidates: string[] = [];
 
-  let L = fgLch.L;
-  const step = 0.01;
+  // Direction 1: lighten (search L from fgLch.L to 1)
+  const lightResult = binarySearchL(fgLch, background, minRatio, fgLch.L, 1);
+  if (lightResult) candidates.push(lightResult);
 
-  for (let i = 0; i < 100; i++) {
-    const testHex = oklchToHex(clampOklch({ ...fgLch, L }));
-    if (contrastRatio(testHex, background) >= minRatio) {
-      return testHex;
-    }
-    L = shouldLighten ? L + step : L - step;
-    if (L > 1 || L < 0) break;
+  // Direction 2: darken (search L from fgLch.L to 0)
+  const darkResult = binarySearchL(fgLch, background, minRatio, fgLch.L, 0);
+  if (darkResult) candidates.push(darkResult);
+
+  if (candidates.length === 0) {
+    // Neither direction worked — pick whichever extreme has higher contrast
+    const whiteRatio = contrastRatio("#ffffff", background);
+    const blackRatio = contrastRatio("#000000", background);
+    return whiteRatio >= blackRatio ? "#ffffff" : "#000000";
   }
 
-  // Fallback to pure white or black
-  return shouldLighten ? "#ffffff" : "#000000";
+  if (candidates.length === 1) return candidates[0];
+
+  // Both directions found a result — pick the one closest to original L
+  const l0 = hexToOklch(candidates[0]).L;
+  const l1 = hexToOklch(candidates[1]).L;
+  return Math.abs(l0 - fgLch.L) <= Math.abs(l1 - fgLch.L)
+    ? candidates[0]
+    : candidates[1];
+}
+
+/**
+ * Binary search for the L value closest to `from` (toward `to`) that
+ * achieves the target contrast ratio against the background.
+ * Returns null if the extreme `to` doesn't meet the ratio.
+ */
+function binarySearchL(
+  fgLch: { L: number; C: number; H: number },
+  background: string,
+  minRatio: number,
+  from: number,
+  to: number
+): string | null {
+  // Check if the extreme can meet the target at all
+  const extremeHex = oklchToHex(clampOklch({ ...fgLch, L: to }));
+  if (contrastRatio(extremeHex, background) < minRatio) return null;
+
+  // Check if start already meets the target
+  const startHex = oklchToHex(clampOklch({ ...fgLch, L: from }));
+  if (contrastRatio(startHex, background) >= minRatio) return startHex;
+
+  // Binary search: lo is the failing side, hi is the passing side
+  let lo = from;
+  let hi = to;
+
+  for (let i = 0; i < 25; i++) {
+    const mid = (lo + hi) / 2;
+    const midHex = oklchToHex(clampOklch({ ...fgLch, L: mid }));
+    if (contrastRatio(midHex, background) >= minRatio) {
+      hi = mid;
+    } else {
+      lo = mid;
+    }
+  }
+
+  return oklchToHex(clampOklch({ ...fgLch, L: hi }));
 }
 
 /**
