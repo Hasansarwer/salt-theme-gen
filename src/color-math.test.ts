@@ -25,6 +25,7 @@ import {
   adjustHue,
   setLightness,
   setChroma,
+  mix,
 } from "./color-math";
 import { expectCloseHex, expectValidHex } from "./test-helpers";
 
