@@ -22,14 +22,15 @@ export function deriveStateColors(baseHex: string, backgroundHex: string): State
 }
 
 /**
- * Derive state colors for all 6 intent colors.
- * 6 intents × 4 states = 24 state colors.
+ * Derive state colors for all 7 intent colors.
+ * 7 intents × 4 states = 28 state colors.
  */
 export function deriveAllIntentStates(colors: SemanticColors): IntentStates {
   const bg = colors.background;
   return {
     primary: deriveStateColors(colors.primary, bg),
     secondary: deriveStateColors(colors.secondary, bg),
+    tertiary: deriveStateColors(colors.tertiary, bg),
     danger: deriveStateColors(colors.danger, bg),
     success: deriveStateColors(colors.success, bg),
     warning: deriveStateColors(colors.warning, bg),
