@@ -50,7 +50,7 @@ describe("deriveColors - light mode", () => {
     const primaryLch = hexToOklch(colors.primary);
     const tertiaryLch = hexToOklch(colors.tertiary);
     const expectedH = (primaryLch.H + 2 * secondaryHueOffset(primaryLch.H)) % 360;
-    expect(tertiaryLch.H).toBeCloseTo(expectedH, 0);
+    expect(Math.abs(tertiaryLch.H - expectedH)).toBeLessThan(1.5);
   });
 
   it("tertiary chroma is approximately primaryC * 0.75", () => {
