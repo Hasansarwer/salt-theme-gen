@@ -170,6 +170,45 @@ describe("deriveColors - secondary override", () => {
   });
 });
 
+// ─── deriveColors — intent colors auto-corrected on background ──────
+
+describe("deriveColors - intent colors meet WCAG AA on background", () => {
+  const intents = ["danger", "success", "warning", "info"] as const;
+
+  it("light mode: all intent colors meet 4.5:1 against background", () => {
+    const colors = deriveColors(PRIMARY, "light");
+    for (const intent of intents) {
+      const ratio = contrastRatio(colors[intent], colors.background);
+      expect(ratio, `${intent} on background`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("dark mode: all intent colors meet 4.5:1 against background", () => {
+    const colors = deriveColors(PRIMARY, "dark");
+    for (const intent of intents) {
+      const ratio = contrastRatio(colors[intent], colors.background);
+      expect(ratio, `${intent} on background`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("achromatic primary: intent colors still meet 4.5:1", () => {
+    const colors = deriveColors("#808080", "light");
+    for (const intent of intents) {
+      const ratio = contrastRatio(colors[intent], colors.background);
+      expect(ratio, `${intent} on background`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("intent hues are preserved after auto-correction", () => {
+    const colors = deriveColors(PRIMARY, "light");
+    const expectedHues = { danger: 25, success: 145, warning: 80, info: 235 };
+    for (const intent of intents) {
+      const lch = hexToOklch(colors[intent]);
+      expect(lch.H).toBeCloseTo(expectedHues[intent], 0);
+    }
+  });
+});
+
 // ─── deriveColors — edge cases ──────────────────────────────────────
 
 describe("deriveColors - edge cases", () => {
