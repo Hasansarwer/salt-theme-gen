@@ -3,7 +3,7 @@ import { deriveOnColor, autoCorrectContrast } from "./on-colors";
 import type { OKLCH, SemanticColors, SurfaceElevation } from "./types";
 
 // ─── OKLCH Butterfly Rule ────────────────────────────────────────────
-// Derives all 11 base colors + 6 "on" colors from a single primary.
+// Derives all 12 base colors + 7 "on" colors from a single primary.
 // All derivation happens in OKLCH space for perceptual uniformity.
 
 type DerivationRule = {
@@ -36,6 +36,7 @@ export function secondaryHueOffset(primaryH: number): number {
 const LIGHT_RULES: Record<string, DerivationRule> = {
   primary:    { L: (p) => adaptiveL(0.55, p.H),        C: (p) => p.C,        H: (p) => p.H },
   secondary:  { L: (p) => { const sh = p.H + secondaryHueOffset(p.H); return adaptiveL(0.58, sh); },   C: (p) => p.C * 0.85, H: (p) => p.H + secondaryHueOffset(p.H) },
+  tertiary:   { L: (p) => { const th = p.H + 2 * secondaryHueOffset(p.H); return adaptiveL(0.55, th); }, C: (p) => p.C * 0.75, H: (p) => (p.H + 2 * secondaryHueOffset(p.H)) % 360 },
   background: { L: 0.97,  C: (p) => p.C * 0.03, H: (p) => p.H },
   surface:    { L: 1.00,  C: 0,                 H: (p) => p.H },
   text:       { L: 0.13,  C: (p) => p.C * 0.05, H: (p) => p.H },
@@ -50,6 +51,7 @@ const LIGHT_RULES: Record<string, DerivationRule> = {
 const DARK_RULES: Record<string, DerivationRule> = {
   primary:    { L: (p) => adaptiveL(0.72, p.H, 0.04),       C: (p) => p.C,       H: (p) => p.H },
   secondary:  { L: (p) => { const sh = p.H + secondaryHueOffset(p.H); return adaptiveL(0.74, sh, 0.04); },  C: (p) => p.C * 0.8, H: (p) => p.H + secondaryHueOffset(p.H) },
+  tertiary:   { L: (p) => { const th = p.H + 2 * secondaryHueOffset(p.H); return adaptiveL(0.72, th, 0.04); }, C: (p) => p.C * 0.7, H: (p) => (p.H + 2 * secondaryHueOffset(p.H)) % 360 },
   background: { L: 0.15,  C: (p) => p.C * 0.04, H: (p) => p.H },
   surface:    { L: 0.20,  C: (p) => p.C * 0.06, H: (p) => p.H },
   text:       { L: 0.97,  C: (p) => p.C * 0.03, H: (p) => p.H },
@@ -80,25 +82,29 @@ function applyRule(
 }
 
 /**
- * Derive all 17 semantic colors from a primary HEX using the OKLCH butterfly rule.
+ * Derive all 19 semantic colors from a primary HEX using the OKLCH butterfly rule.
  */
 export function deriveColors(
   primaryHex: string,
   mode: "light" | "dark",
-  secondaryOverride?: string
+  secondaryOverride?: string,
+  tertiaryOverride?: string
 ): SemanticColors {
   const primary = hexToOklch(primaryHex);
   const rules = mode === "light" ? LIGHT_RULES : DARK_RULES;
 
-  // Derive 11 base colors
+  // Derive 12 base colors
   const base: Record<string, string> = {};
   for (const [key, rule] of Object.entries(rules)) {
     base[key] = oklchToHex(applyRule(rule, primary));
   }
 
-  // Override secondary if provided
+  // Override secondary/tertiary if provided
   if (secondaryOverride) {
     base.secondary = secondaryOverride;
+  }
+  if (tertiaryOverride) {
+    base.tertiary = tertiaryOverride;
   }
 
   // Auto-correct intent colors against background for WCAG AA (4.5:1)
@@ -107,9 +113,10 @@ export function deriveColors(
     base[key] = autoCorrectContrast(base[key], base.background, 4.5);
   }
 
-  // Derive 6 "on" colors with WCAG auto-correction
+  // Derive 7 "on" colors with WCAG auto-correction
   const onPrimary = deriveOnColor(base.primary);
   const onSecondary = deriveOnColor(base.secondary);
+  const onTertiary = deriveOnColor(base.tertiary);
   const onDanger = deriveOnColor(base.danger);
   const onSuccess = deriveOnColor(base.success);
   const onWarning = deriveOnColor(base.warning);
@@ -118,6 +125,7 @@ export function deriveColors(
   return {
     primary: base.primary,
     secondary: base.secondary,
+    tertiary: base.tertiary,
     background: base.background,
     surface: base.surface,
     text: base.text,
@@ -129,6 +137,7 @@ export function deriveColors(
     info: base.info,
     onPrimary,
     onSecondary,
+    onTertiary,
     onDanger,
     onSuccess,
     onWarning,
