@@ -113,6 +113,7 @@ export function buildAccessibilityReport(colors: SemanticColors): AccessibilityR
   return {
     primaryOnBackground: makeEntry(colors.primary, colors.background),
     secondaryOnBackground: makeEntry(colors.secondary, colors.background),
+    tertiaryOnBackground: makeEntry(colors.tertiary, colors.background),
     textOnBackground: makeEntry(colors.text, colors.background),
     textOnSurface: makeEntry(colors.text, colors.surface),
     dangerOnBackground: makeEntry(colors.danger, colors.background),
@@ -121,6 +122,7 @@ export function buildAccessibilityReport(colors: SemanticColors): AccessibilityR
     infoOnBackground: makeEntry(colors.info, colors.background),
     onPrimaryOnPrimary: makeEntry(colors.onPrimary, colors.primary),
     onSecondaryOnSecondary: makeEntry(colors.onSecondary, colors.secondary),
+    onTertiaryOnTertiary: makeEntry(colors.onTertiary, colors.tertiary),
     onDangerOnDanger: makeEntry(colors.onDanger, colors.danger),
     onSuccessOnSuccess: makeEntry(colors.onSuccess, colors.success),
     onWarningOnWarning: makeEntry(colors.onWarning, colors.warning),
