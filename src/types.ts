@@ -1,0 +1,179 @@
+// ─── Color Representations ───────────────────────────────────────────
+
+export type RGB = { r: number; g: number; b: number }; // 0–255
+
+export type Oklab = { L: number; a: number; b: number }; // L: 0–1, a/b: ~±0.4
+
+export type OKLCH = { L: number; C: number; H: number }; // L: 0–1, C: 0–~0.4, H: 0–360
+
+export type FontLevel = 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18;
+
+// ─── Theme Presets ───────────────────────────────────────────────────
+
+export type ThemePreset =
+  | "peacock"
+  | "ocean"
+  | "forest"
+  | "sunset"
+  | "cherry-blossom"
+  | "arctic"
+  | "desert"
+  | "lavender"
+  | "emerald"
+  | "coral-reef"
+  | "midnight"
+  | "autumn"
+  | "rose-gold"
+  | "sapphire"
+  | "mint"
+  | "volcano"
+  | "twilight"
+  | "honey"
+  | "storm"
+  | "aurora";
+
+export type SpacingPreset = "compact" | "default" | "relaxed" | "spacious";
+export type FontSizePreset = "small" | "default" | "large" | "editorial";
+export type RadiusPreset = "sharp" | "default" | "rounded" | "pill";
+
+// ─── Scale Shapes (match ui-kit token shapes exactly) ────────────────
+
+export type SpacingScale = {
+  none: number;
+  xs: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  xxl: number;
+};
+
+export type RadiusScale = {
+  none: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  xxl: number;
+  pill: number;
+};
+
+export type FontSizeScale = {
+  xs: number;
+  sm: number;
+  md: number;
+  lg: number;
+  xl: number;
+  xxl: number;
+  "3xl": number;
+};
+
+// ─── Semantic Colors (17 keys, matching ui-kit colors) ───────────────
+
+export type SemanticColors = {
+  primary: string;
+  secondary: string;
+  background: string;
+  surface: string;
+  text: string;
+  muted: string;
+  border: string;
+  danger: string;
+  success: string;
+  warning: string;
+  info: string;
+  onPrimary: string;
+  onSecondary: string;
+  onDanger: string;
+  onSuccess: string;
+  onWarning: string;
+  onInfo: string;
+};
+
+// ─── State Colors ────────────────────────────────────────────────────
+
+export type StateColors = {
+  hover: string;
+  pressed: string;
+  focused: string;
+  disabled: string;
+};
+
+export type IntentStates = {
+  primary: StateColors;
+  secondary: StateColors;
+  danger: StateColors;
+  success: StateColors;
+  warning: StateColors;
+  info: StateColors;
+};
+
+// ─── Accessibility ───────────────────────────────────────────────────
+
+export type ContrastEntry = {
+  ratio: number;
+  level: "AAA" | "AA" | "fail";
+};
+
+export type AccessibilityReport = {
+  primaryOnBackground: ContrastEntry;
+  secondaryOnBackground: ContrastEntry;
+  textOnBackground: ContrastEntry;
+  textOnSurface: ContrastEntry;
+  dangerOnBackground: ContrastEntry;
+  successOnBackground: ContrastEntry;
+  warningOnBackground: ContrastEntry;
+  infoOnBackground: ContrastEntry;
+  onPrimaryOnPrimary: ContrastEntry;
+  onSecondaryOnSecondary: ContrastEntry;
+  onDangerOnDanger: ContrastEntry;
+  onSuccessOnSuccess: ContrastEntry;
+  onWarningOnWarning: ContrastEntry;
+  onInfoOnInfo: ContrastEntry;
+};
+
+// ─── Generated Theme Output ──────────────────────────────────────────
+
+export type GeneratedThemeMode = {
+  mode: "light" | "dark";
+  colors: SemanticColors;
+  spacing: SpacingScale;
+  radius: RadiusScale;
+  fontSizes: FontSizeScale;
+  fontLevel: FontLevel;
+  states: IntentStates;
+  accessibility: AccessibilityReport;
+};
+
+export type GeneratedTheme = {
+  light: GeneratedThemeMode;
+  dark: GeneratedThemeMode;
+};
+
+// ─── Input Options ───────────────────────────────────────────────────
+
+export type GenerateThemeOptions = {
+  /** Primary color as HEX string (e.g., "#0E9D8E") */
+  primary?: string;
+  /** Nature preset name — ignored if `primary` is provided */
+  preset?: ThemePreset;
+  /** Override auto-derived secondary color */
+  secondary?: string;
+  /** Spacing scale preset or custom object */
+  spacing?: SpacingPreset | SpacingScale;
+  /** Font size scale preset or custom object */
+  fontSize?: FontSizePreset | FontSizeScale;
+  /** Radius scale preset or custom object */
+  radius?: RadiusPreset | RadiusScale;
+  /** Font level for typography (8–18, default 16) */
+  fontLevel?: number;
+};
+
+// ─── Nature Preset Data ──────────────────────────────────────────────
+
+export type NaturePresetData = {
+  name: ThemePreset;
+  hue: number;
+  chroma: number;
+  description: string;
+};

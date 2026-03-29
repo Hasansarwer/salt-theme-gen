@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(npm view one-color-theme)",
+      "Bash(npm view salt-theme-gen)"
+    ]
+  }
+}
