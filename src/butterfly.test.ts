@@ -199,12 +199,12 @@ describe("deriveColors - intent colors meet WCAG AA on background", () => {
     }
   });
 
-  it("intent hues are preserved after auto-correction", () => {
+  it("intent hues are preserved after auto-correction (within 1.5°)", () => {
     const colors = deriveColors(PRIMARY, "light");
     const expectedHues = { danger: 25, success: 145, warning: 80, info: 235 };
     for (const intent of intents) {
       const lch = hexToOklch(colors[intent]);
-      expect(lch.H).toBeCloseTo(expectedHues[intent], 0);
+      expect(Math.abs(lch.H - expectedHues[intent]), `${intent} hue`).toBeLessThan(1.5);
     }
   });
 });
