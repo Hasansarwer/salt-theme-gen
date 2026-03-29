@@ -53,6 +53,16 @@ describe("generateTheme - defaults", () => {
     }
   });
 
+  it("surfaceElevation has card, elevated, modal, popover", () => {
+    const keys = ["card", "elevated", "modal", "popover"];
+    for (const key of keys) {
+      expect(theme.light.surfaceElevation).toHaveProperty(key);
+      expect(theme.dark.surfaceElevation).toHaveProperty(key);
+      expectValidHex(theme.light.surfaceElevation[key as keyof typeof theme.light.surfaceElevation]);
+      expectValidHex(theme.dark.surfaceElevation[key as keyof typeof theme.dark.surfaceElevation]);
+    }
+  });
+
   it("default preset is ocean (hue=235)", () => {
     const primaryLch = hexToOklch(theme.light.colors.primary);
     // Ocean preset hue is 235
