@@ -72,8 +72,8 @@ export function generateTheme(options: GenerateThemeOptions = {}): GeneratedThem
   const fontLevel = Math.max(8, Math.min(18, options.fontLevel ?? 16)) as FontLevel;
 
   // 5. Generate both modes
-  const light = generateMode("light", primaryHex, secondaryOverride, spacing, radius, fontSize, fontLevel);
-  const dark = generateMode("dark", primaryHex, secondaryOverride, spacing, radius, fontSize, fontLevel);
+  const light = generateMode("light", primaryHex, secondaryOverride, tertiaryOverride, spacing, radius, fontSize, fontLevel);
+  const dark = generateMode("dark", primaryHex, secondaryOverride, tertiaryOverride, spacing, radius, fontSize, fontLevel);
 
   return { light, dark };
 }
@@ -82,12 +82,13 @@ function generateMode(
   mode: "light" | "dark",
   primaryHex: string,
   secondaryOverride: string | undefined,
+  tertiaryOverride: string | undefined,
   spacing: SpacingScale,
   radius: RadiusScale,
   fontSizes: FontSizeScale,
   fontLevel: FontLevel
 ): GeneratedThemeMode {
-  const colors = deriveColors(primaryHex, mode, secondaryOverride);
+  const colors = deriveColors(primaryHex, mode, secondaryOverride, tertiaryOverride);
   const surfaceElevation = deriveSurfaceElevation(colors.surface, colors.primary, mode);
   const states = deriveAllIntentStates(colors);
   const accessibility = buildAccessibilityReport(colors);
