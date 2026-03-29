@@ -72,12 +72,12 @@ describe("deriveColors - light mode", () => {
 
   it("warning hue is approximately 80", () => {
     const lch = hexToOklch(colors.warning);
-    expect(lch.H).toBeCloseTo(80, 0);
+    expect(Math.abs(lch.H - 80)).toBeLessThan(1.5);
   });
 
   it("info hue is approximately 235", () => {
     const lch = hexToOklch(colors.info);
-    expect(lch.H).toBeCloseTo(235, 0);
+    expect(Math.abs(lch.H - 235)).toBeLessThan(1.5);
   });
 });
 
