@@ -45,11 +45,15 @@ describe("deriveStateColors", () => {
     expect(focusedLch.L).toBeLessThanOrEqual(maxL + 0.01);
   });
 
-  it("disabled is lighter and less saturated than base", () => {
+  it("disabled is less saturated than base", () => {
     const baseLch = hexToOklch(base);
     expectValidHex(states.disabled);
     const disabledLch = hexToOklch(states.disabled);
     expect(disabledLch.C).toBeLessThan(baseLch.C);
+  });
+
+  it("disabled meets 3:1 contrast against background", () => {
+    expect(contrastRatio(states.disabled, bg)).toBeGreaterThanOrEqual(3);
   });
 
   it("all states are valid hex", () => {
@@ -73,6 +77,26 @@ describe("deriveStateColors", () => {
     expectValidHex(s.pressed);
     expectValidHex(s.focused);
     expectValidHex(s.disabled);
+  });
+
+  it("disabled meets 3:1 even for light base on light bg", () => {
+    // lighten(desaturate(light color)) would be very light — auto-correct kicks in
+    const s = deriveStateColors("#cccccc", "#f0f0f0");
+    expect(contrastRatio(s.disabled, "#f0f0f0")).toBeGreaterThanOrEqual(3);
+  });
+
+  it("disabled meets 3:1 for all modes and primaries", () => {
+    const primaries = ["#1e90ff", "#ff0000", "#00ff00", "#808080", "#ffff00"];
+    for (const p of primaries) {
+      for (const mode of ["light", "dark"] as const) {
+        const colors = deriveColors(p, mode);
+        const s = deriveStateColors(colors.primary, colors.background);
+        expect(
+          contrastRatio(s.disabled, colors.background),
+          `${p} ${mode}`
+        ).toBeGreaterThanOrEqual(3);
+      }
+    }
   });
 });
 
@@ -127,12 +151,32 @@ describe("deriveAllIntentStates", () => {
     expect(allStates.primary.disabled).toBe(primaryStates.disabled);
   });
 
+  it("all disabled values meet 3:1 against background (light)", () => {
+    for (const intent of intents) {
+      expect(
+        contrastRatio(allStates[intent].disabled, colors.background),
+        `${intent} disabled`
+      ).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it("works with dark mode colors", () => {
     const darkColors = deriveColors("#1e90ff", "dark");
     const darkStates = deriveAllIntentStates(darkColors);
     for (const intent of intents) {
       expectValidHex(darkStates[intent].hover);
       expectValidHex(darkStates[intent].focused);
+    }
+  });
+
+  it("all disabled values meet 3:1 against background (dark)", () => {
+    const darkColors = deriveColors("#1e90ff", "dark");
+    const darkStates = deriveAllIntentStates(darkColors);
+    for (const intent of intents) {
+      expect(
+        contrastRatio(darkStates[intent].disabled, darkColors.background),
+        `${intent} disabled dark`
+      ).toBeGreaterThanOrEqual(3);
     }
   });
 });
