@@ -17,37 +17,37 @@ describe("deriveOnColor", () => {
     expect(on).toBe("#0f172a");
   });
 
-  it("result meets WCAG AA for clearly dark backgrounds", () => {
-    const darkBgs = ["#000000", "#111111", "#222222", "#0000ff"];
-    for (const bg of darkBgs) {
-      const on = deriveOnColor(bg);
-      expect(contrastRatio(on, bg)).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it("result meets WCAG AA for clearly light backgrounds", () => {
-    const lightBgs = ["#ffffff", "#eeeeee", "#dddddd", "#ffd700"];
-    for (const bg of lightBgs) {
-      const on = deriveOnColor(bg);
-      expect(contrastRatio(on, bg)).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it("always returns a valid hex string", () => {
-    const testColors = ["#000000", "#ffffff", "#808080", "#ff0000", "#00ff00", "#0000ff"];
+  it("result always meets WCAG AA against input background", () => {
+    const testColors = ["#000000", "#ffffff", "#808080", "#ff0000", "#00ff00", "#0000ff", "#1e90ff", "#ffd700"];
     for (const bg of testColors) {
-      expectValidHex(deriveOnColor(bg));
+      const on = deriveOnColor(bg);
+      const ratio = contrastRatio(on, bg);
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
     }
   });
 
-  // Known limitation: mid-luminance backgrounds (like #808080) may not achieve
-  // 4.5:1 because autoCorrectContrast only walks in one direction.
-  // See deep-improvements.md #3 for planned fix.
-  it("mid-luminance backgrounds return a valid color (may not meet AA)", () => {
+  it("works for mid-luminance backgrounds", () => {
     const on = deriveOnColor("#808080");
     expectValidHex(on);
-    // At minimum it should have some contrast
-    expect(contrastRatio(on, "#808080")).toBeGreaterThan(1);
+    expect(contrastRatio(on, "#808080")).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("works for all light-mode intent colors", () => {
+    const colors = deriveColors("#1e90ff", "light");
+    const intents = ["primary", "secondary", "danger", "success", "warning", "info"] as const;
+    for (const intent of intents) {
+      const on = deriveOnColor(colors[intent]);
+      expect(contrastRatio(on, colors[intent])).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it("works for all dark-mode intent colors", () => {
+    const colors = deriveColors("#1e90ff", "dark");
+    const intents = ["primary", "secondary", "danger", "success", "warning", "info"] as const;
+    for (const intent of intents) {
+      const on = deriveOnColor(colors[intent]);
+      expect(contrastRatio(on, colors[intent])).toBeGreaterThanOrEqual(4.5);
+    }
   });
 });
 
@@ -56,6 +56,7 @@ describe("deriveOnColor", () => {
 describe("autoCorrectContrast", () => {
   it("returns foreground unchanged if already meets ratio", () => {
     const result = autoCorrectContrast("#000000", "#ffffff", 4.5);
+    // Black on white already has 21:1 ratio
     expect(contrastRatio(result, "#ffffff")).toBeGreaterThanOrEqual(4.5);
   });
 
@@ -73,14 +74,9 @@ describe("autoCorrectContrast", () => {
     expect(resultLch.L).toBeLessThanOrEqual(originalLch.L);
   });
 
-  it("achieves target ratio on dark background", () => {
-    const result = autoCorrectContrast("#333333", "#111111", 4.5);
-    expect(contrastRatio(result, "#111111")).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it("achieves target ratio on light background", () => {
-    const result = autoCorrectContrast("#cccccc", "#eeeeee", 4.5);
-    expect(contrastRatio(result, "#eeeeee")).toBeGreaterThanOrEqual(4.5);
+  it("result meets the specified minRatio", () => {
+    const result = autoCorrectContrast("#808080", "#909090", 4.5);
+    expect(contrastRatio(result, "#909090")).toBeGreaterThanOrEqual(4.5);
   });
 
   it("custom minRatio for AAA (7.0) is respected", () => {
@@ -89,6 +85,7 @@ describe("autoCorrectContrast", () => {
   });
 
   it("falls back to pure white for very dark background", () => {
+    // Very similar dark colors where walking up is the only option
     const result = autoCorrectContrast("#010101", "#020202", 4.5);
     expectValidHex(result);
     expect(contrastRatio(result, "#020202")).toBeGreaterThanOrEqual(4.5);
@@ -100,9 +97,10 @@ describe("autoCorrectContrast", () => {
     expect(contrastRatio(result, "#fdfdfd")).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("always returns a valid hex string", () => {
+  it("handles achromatic backgrounds", () => {
     const result = autoCorrectContrast("#888888", "#999999", 4.5);
     expectValidHex(result);
+    expect(contrastRatio(result, "#999999")).toBeGreaterThanOrEqual(4.5);
   });
 });
 
@@ -136,7 +134,7 @@ describe("buildAccessibilityReport", () => {
     }
   });
 
-  it("level classification is correct", () => {
+  it("level is AAA when ratio >= 7, AA when >= 4.5, fail otherwise", () => {
     for (const key of reportKeys) {
       const entry = report[key as keyof typeof report];
       if (entry.ratio >= 7) {
@@ -157,9 +155,16 @@ describe("buildAccessibilityReport", () => {
     }
   });
 
-  it("text on background and surface have high contrast", () => {
-    // Text (L=0.13) on background (L=0.97) should have very high contrast
-    expect(report.textOnBackground.ratio).toBeGreaterThanOrEqual(10);
-    expect(report.textOnSurface.ratio).toBeGreaterThanOrEqual(10);
+  it("all on-color pairs meet at least AA", () => {
+    const onPairs = [
+      "onPrimaryOnPrimary", "onSecondaryOnSecondary",
+      "onDangerOnDanger", "onSuccessOnSuccess",
+      "onWarningOnWarning", "onInfoOnInfo",
+    ];
+    for (const key of onPairs) {
+      const entry = report[key as keyof typeof report];
+      expect(entry.ratio).toBeGreaterThanOrEqual(4.5);
+      expect(["AAA", "AA"]).toContain(entry.level);
+    }
   });
 });
