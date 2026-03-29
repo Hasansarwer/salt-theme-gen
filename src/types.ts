@@ -68,11 +68,12 @@ export type FontSizeScale = {
   "3xl": number;
 };
 
-// ─── Semantic Colors (17 keys, matching ui-kit colors) ───────────────
+// ─── Semantic Colors (19 keys, matching ui-kit colors) ───────────────
 
 export type SemanticColors = {
   primary: string;
   secondary: string;
+  tertiary: string;
   background: string;
   surface: string;
   text: string;
@@ -84,6 +85,7 @@ export type SemanticColors = {
   info: string;
   onPrimary: string;
   onSecondary: string;
+  onTertiary: string;
   onDanger: string;
   onSuccess: string;
   onWarning: string;
@@ -102,6 +104,7 @@ export type StateColors = {
 export type IntentStates = {
   primary: StateColors;
   secondary: StateColors;
+  tertiary: StateColors;
   danger: StateColors;
   success: StateColors;
   warning: StateColors;
@@ -127,6 +130,7 @@ export type ContrastEntry = {
 export type AccessibilityReport = {
   primaryOnBackground: ContrastEntry;
   secondaryOnBackground: ContrastEntry;
+  tertiaryOnBackground: ContrastEntry;
   textOnBackground: ContrastEntry;
   textOnSurface: ContrastEntry;
   dangerOnBackground: ContrastEntry;
@@ -135,6 +139,7 @@ export type AccessibilityReport = {
   infoOnBackground: ContrastEntry;
   onPrimaryOnPrimary: ContrastEntry;
   onSecondaryOnSecondary: ContrastEntry;
+  onTertiaryOnTertiary: ContrastEntry;
   onDangerOnDanger: ContrastEntry;
   onSuccessOnSuccess: ContrastEntry;
   onWarningOnWarning: ContrastEntry;
