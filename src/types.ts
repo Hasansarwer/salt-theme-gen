@@ -108,6 +108,15 @@ export type IntentStates = {
   info: StateColors;
 };
 
+// ─── Surface Elevation ──────────────────────────────────────────────
+
+export type SurfaceElevation = {
+  card: string;       // card / sheet
+  elevated: string;   // elevated card / bottom sheet
+  modal: string;      // modal / dialog
+  popover: string;    // popover / tooltip / dropdown
+};
+
 // ─── Accessibility ───────────────────────────────────────────────────
 
 export type ContrastEntry = {

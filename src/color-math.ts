@@ -323,3 +323,23 @@ export function setChroma(hex: string, C: number): string {
   const lch = hexToOklch(hex);
   return oklchToHex(clampOklch({ ...lch, C }));
 }
+
+/**
+ * Mix two colors in OKLCH space. ratio=0 returns color1, ratio=1 returns color2.
+ * Hue is interpolated along the shortest arc.
+ */
+export function mix(hex1: string, hex2: string, ratio: number): string {
+  const lch1 = hexToOklch(hex1);
+  const lch2 = hexToOklch(hex2);
+
+  const L = lch1.L + (lch2.L - lch1.L) * ratio;
+  const C = lch1.C + (lch2.C - lch1.C) * ratio;
+
+  // Shortest-arc hue interpolation
+  let dH = lch2.H - lch1.H;
+  if (dH > 180) dH -= 360;
+  if (dH < -180) dH += 360;
+  const H = lch1.H + dH * ratio;
+
+  return oklchToHex(clampOklch({ L, C, H }));
+}
