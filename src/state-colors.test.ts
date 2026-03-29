@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { deriveStateColors, deriveAllIntentStates } from "./state-colors";
-import { hexToOklch } from "./color-math";
+import { hexToOklch, contrastRatio } from "./color-math";
 import { deriveColors } from "./butterfly";
 import { expectValidHex } from "./test-helpers";
 
