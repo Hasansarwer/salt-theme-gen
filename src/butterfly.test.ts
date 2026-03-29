@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveColors, deriveSurfaceElevation, adaptiveL } from "./butterfly";
+import { deriveColors, deriveSurfaceElevation, adaptiveL, secondaryHueOffset } from "./butterfly";
 import { hexToOklch, contrastRatio } from "./color-math";
 import { expectValidHex } from "./test-helpers";
 
@@ -33,10 +33,10 @@ describe("deriveColors - light mode", () => {
     expect(lch.L).toBeCloseTo(adaptiveL(0.55, primaryH), 1);
   });
 
-  it("secondary hue is approximately primaryH + 60", () => {
+  it("secondary hue uses hue-aware offset from primary", () => {
     const primaryLch = hexToOklch(colors.primary);
     const secondaryLch = hexToOklch(colors.secondary);
-    const expectedH = (primaryLch.H + 60) % 360;
+    const expectedH = (primaryLch.H + secondaryHueOffset(primaryLch.H)) % 360;
     expect(secondaryLch.H).toBeCloseTo(expectedH, 0);
   });
 
@@ -339,5 +339,38 @@ describe("adaptiveL", () => {
     const yellowL = hexToOklch(yellow.primary).L;
     const blueL = hexToOklch(blue.primary).L;
     expect(yellowL).toBeLessThan(blueL);
+  });
+});
+
+// ─── secondaryHueOffset ─────────────────────────────────────────────
+
+describe("secondaryHueOffset", () => {
+  it("red (H≈0) gets large offset (~120°)", () => {
+    expect(secondaryHueOffset(0)).toBeCloseTo(120, 0);
+  });
+
+  it("cyan (H≈180) gets small offset (~60°)", () => {
+    expect(secondaryHueOffset(180)).toBeCloseTo(60, 0);
+  });
+
+  it("purple (H≈270) gets medium offset (~90°)", () => {
+    expect(secondaryHueOffset(270)).toBeCloseTo(90, 0);
+  });
+
+  it("always returns between 60 and 120", () => {
+    for (let h = 0; h < 360; h += 5) {
+      const offset = secondaryHueOffset(h);
+      expect(offset).toBeGreaterThanOrEqual(60);
+      expect(offset).toBeLessThanOrEqual(120);
+    }
+  });
+
+  it("red primary secondary is NOT orange — at least 90° apart", () => {
+    const red = deriveColors("#ff0000", "light");
+    const primaryH = hexToOklch(red.primary).H;
+    const secondaryH = hexToOklch(red.secondary).H;
+    let diff = Math.abs(secondaryH - primaryH);
+    if (diff > 180) diff = 360 - diff;
+    expect(diff).toBeGreaterThanOrEqual(90);
   });
 });
