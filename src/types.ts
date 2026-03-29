@@ -146,6 +146,7 @@ export type AccessibilityReport = {
 export type GeneratedThemeMode = {
   mode: "light" | "dark";
   colors: SemanticColors;
+  surfaceElevation: SurfaceElevation;
   spacing: SpacingScale;
   radius: RadiusScale;
   fontSizes: FontSizeScale;
