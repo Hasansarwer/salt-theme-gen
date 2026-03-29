@@ -85,12 +85,14 @@ function generateMode(
   fontLevel: FontLevel
 ): GeneratedThemeMode {
   const colors = deriveColors(primaryHex, mode, secondaryOverride);
+  const surfaceElevation = deriveSurfaceElevation(colors.surface, colors.primary, mode);
   const states = deriveAllIntentStates(colors);
   const accessibility = buildAccessibilityReport(colors);
 
   return {
     mode,
     colors,
+    surfaceElevation,
     spacing,
     radius,
     fontSizes,

@@ -9,6 +9,7 @@ export type {
   SemanticColors,
   StateColors,
   IntentStates,
+  SurfaceElevation,
   AccessibilityReport,
   ContrastEntry,
   ThemePreset,
@@ -51,9 +52,10 @@ export {
   isValidHex,
   normalizeHex,
   gamutClamp,
+  mix,
 } from "./color-math";
 
 // ─── Color Derivation (for consumers who want partial control) ───────
-export { deriveColors } from "./butterfly";
+export { deriveColors, deriveSurfaceElevation } from "./butterfly";
 export { deriveOnColor, autoCorrectContrast } from "./on-colors";
 export { deriveStateColors, deriveAllIntentStates } from "./state-colors";
