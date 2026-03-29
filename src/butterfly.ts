@@ -1,5 +1,5 @@
 import { hexToOklch, oklchToHex, clampOklch } from "./color-math";
-import { deriveOnColor } from "./on-colors";
+import { deriveOnColor, autoCorrectContrast } from "./on-colors";
 import type { OKLCH, SemanticColors } from "./types";
 
 // ─── OKLCH Butterfly Rule ────────────────────────────────────────────
@@ -78,6 +78,12 @@ export function deriveColors(
   // Override secondary if provided
   if (secondaryOverride) {
     base.secondary = secondaryOverride;
+  }
+
+  // Auto-correct intent colors against background for WCAG AA (4.5:1)
+  const intentKeys = ["danger", "success", "warning", "info"] as const;
+  for (const key of intentKeys) {
+    base[key] = autoCorrectContrast(base[key], base.background, 4.5);
   }
 
   // Derive 6 "on" colors with WCAG auto-correction
