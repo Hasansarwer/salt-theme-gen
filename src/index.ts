@@ -59,3 +59,6 @@ export {
 export { deriveColors, deriveSurfaceElevation } from "./butterfly";
 export { deriveOnColor, autoCorrectContrast } from "./on-colors";
 export { deriveStateColors, deriveAllIntentStates } from "./state-colors";
+
+// ─── Validation (for deserialized themes) ────────────────────────────
+export { parseThemeJSON } from "./validate";
