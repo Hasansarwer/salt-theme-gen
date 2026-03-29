@@ -174,6 +174,8 @@ export type GenerateThemeOptions = {
   preset?: ThemePreset;
   /** Override auto-derived secondary color */
   secondary?: string;
+  /** Override auto-derived tertiary color */
+  tertiary?: string;
   /** Spacing scale preset or custom object */
   spacing?: SpacingPreset | SpacingScale;
   /** Font size scale preset or custom object */
