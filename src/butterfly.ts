@@ -22,9 +22,20 @@ export function adaptiveL(baseL: number, hue: number, amplitude: number = 0.05):
   return Math.max(0, Math.min(1, baseL + offset));
 }
 
+/**
+ * Hue-aware secondary offset. Warm hues (red≈0°) get larger offsets (up to 120°)
+ * because +60° produces colors that are perceptually too similar (red→orange).
+ * Cool hues (cyan≈180°) keep 60° where analogous harmony works well.
+ */
+export function secondaryHueOffset(primaryH: number): number {
+  const h = ((primaryH % 360) + 360) % 360;
+  const t = (1 + Math.cos((h * Math.PI) / 180)) / 2; // 1 at H=0, 0 at H=180
+  return 60 + 60 * t; // 60° (cool) → 120° (warm)
+}
+
 const LIGHT_RULES: Record<string, DerivationRule> = {
   primary:    { L: (p) => adaptiveL(0.55, p.H),        C: (p) => p.C,        H: (p) => p.H },
-  secondary:  { L: (p) => adaptiveL(0.58, p.H + 60),   C: (p) => p.C * 0.85, H: (p) => p.H + 60 },
+  secondary:  { L: (p) => { const sh = p.H + secondaryHueOffset(p.H); return adaptiveL(0.58, sh); },   C: (p) => p.C * 0.85, H: (p) => p.H + secondaryHueOffset(p.H) },
   background: { L: 0.97,  C: (p) => p.C * 0.03, H: (p) => p.H },
   surface:    { L: 1.00,  C: 0,                 H: (p) => p.H },
   text:       { L: 0.13,  C: (p) => p.C * 0.05, H: (p) => p.H },
@@ -38,7 +49,7 @@ const LIGHT_RULES: Record<string, DerivationRule> = {
 
 const DARK_RULES: Record<string, DerivationRule> = {
   primary:    { L: (p) => adaptiveL(0.72, p.H, 0.04),       C: (p) => p.C,       H: (p) => p.H },
-  secondary:  { L: (p) => adaptiveL(0.74, p.H + 60, 0.04),  C: (p) => p.C * 0.8, H: (p) => p.H + 60 },
+  secondary:  { L: (p) => { const sh = p.H + secondaryHueOffset(p.H); return adaptiveL(0.74, sh, 0.04); },  C: (p) => p.C * 0.8, H: (p) => p.H + secondaryHueOffset(p.H) },
   background: { L: 0.15,  C: (p) => p.C * 0.04, H: (p) => p.H },
   surface:    { L: 0.20,  C: (p) => p.C * 0.06, H: (p) => p.H },
   text:       { L: 0.97,  C: (p) => p.C * 0.03, H: (p) => p.H },
