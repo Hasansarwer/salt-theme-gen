@@ -1,5 +1,5 @@
 import { parseColor, oklchToHex } from "./color-math";
-import { deriveColors } from "./butterfly";
+import { deriveColors, deriveSurfaceElevation } from "./butterfly";
 import { deriveAllIntentStates } from "./state-colors";
 import { buildAccessibilityReport } from "./on-colors";
 import { SPACING_PRESETS } from "./presets/spacing-presets";
