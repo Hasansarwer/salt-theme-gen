@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveColors, deriveSurfaceElevation } from "./butterfly";
+import { deriveColors, deriveSurfaceElevation, adaptiveL } from "./butterfly";
 import { hexToOklch, contrastRatio } from "./color-math";
 import { expectValidHex } from "./test-helpers";
 
@@ -27,9 +27,10 @@ describe("deriveColors - light mode", () => {
     }
   });
 
-  it("primary has L approximately 0.55", () => {
+  it("primary L is hue-adaptive around 0.55", () => {
     const lch = hexToOklch(colors.primary);
-    expect(lch.L).toBeCloseTo(0.55, 1);
+    const primaryH = hexToOklch(PRIMARY).H;
+    expect(lch.L).toBeCloseTo(adaptiveL(0.55, primaryH), 1);
   });
 
   it("secondary hue is approximately primaryH + 60", () => {
@@ -86,14 +87,16 @@ describe("deriveColors - light mode", () => {
 describe("deriveColors - dark mode", () => {
   const colors = deriveColors(PRIMARY, "dark");
 
-  it("primary has L approximately 0.72", () => {
+  it("primary L is hue-adaptive around 0.72", () => {
     const lch = hexToOklch(colors.primary);
-    expect(lch.L).toBeCloseTo(0.72, 1);
+    const primaryH = hexToOklch(PRIMARY).H;
+    expect(lch.L).toBeCloseTo(adaptiveL(0.72, primaryH, 0.04), 1);
   });
 
-  it("secondary has L approximately 0.74", () => {
+  it("secondary L is hue-adaptive around 0.74", () => {
     const lch = hexToOklch(colors.secondary);
-    expect(lch.L).toBeCloseTo(0.74, 1);
+    const primaryH = hexToOklch(PRIMARY).H;
+    expect(lch.L).toBeCloseTo(adaptiveL(0.74, primaryH + 60, 0.04), 1);
   });
 
   it("background has L approximately 0.15 (dark)", () => {
@@ -297,5 +300,44 @@ describe("deriveSurfaceElevation", () => {
     for (const key of keys) {
       expectValidHex(elev[key]);
     }
+  });
+});
+
+// ─── adaptiveL ──────────────────────────────────────────────────────
+
+describe("adaptiveL", () => {
+  it("yellow (H≈90) gets lower L than base", () => {
+    expect(adaptiveL(0.55, 90)).toBeLessThan(0.55);
+  });
+
+  it("blue (H≈270) gets higher L than base", () => {
+    expect(adaptiveL(0.55, 270)).toBeGreaterThan(0.55);
+  });
+
+  it("red (H≈0) and cyan (H≈180) stay near base", () => {
+    expect(adaptiveL(0.55, 0)).toBeCloseTo(0.55, 2);
+    expect(adaptiveL(0.55, 180)).toBeCloseTo(0.55, 2);
+  });
+
+  it("never exceeds [0, 1]", () => {
+    for (let h = 0; h < 360; h += 10) {
+      const l = adaptiveL(0.55, h);
+      expect(l).toBeGreaterThanOrEqual(0);
+      expect(l).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("custom amplitude controls range", () => {
+    const small = adaptiveL(0.55, 90, 0.02);
+    const large = adaptiveL(0.55, 90, 0.08);
+    expect(Math.abs(0.55 - small)).toBeLessThan(Math.abs(0.55 - large));
+  });
+
+  it("yellow primary is visually darker than blue primary in light mode", () => {
+    const yellow = deriveColors("#ffd700", "light");
+    const blue = deriveColors("#0000ff", "light");
+    const yellowL = hexToOklch(yellow.primary).L;
+    const blueL = hexToOklch(blue.primary).L;
+    expect(yellowL).toBeLessThan(blueL);
   });
 });
