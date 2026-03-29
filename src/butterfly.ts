@@ -1,6 +1,6 @@
-import { hexToOklch, oklchToHex, clampOklch } from "./color-math";
+import { hexToOklch, oklchToHex, clampOklch, lighten, mix } from "./color-math";
 import { deriveOnColor, autoCorrectContrast } from "./on-colors";
-import type { OKLCH, SemanticColors } from "./types";
+import type { OKLCH, SemanticColors, SurfaceElevation } from "./types";
 
 // ─── OKLCH Butterfly Rule ────────────────────────────────────────────
 // Derives all 11 base colors + 6 "on" colors from a single primary.
@@ -112,5 +112,32 @@ export function deriveColors(
     onSuccess,
     onWarning,
     onInfo,
+  };
+}
+
+/**
+ * Derive 4 surface elevation levels for visual depth.
+ * Dark mode: progressively lighten the base surface.
+ * Light mode: tint the base surface with primary at increasing ratios.
+ */
+export function deriveSurfaceElevation(
+  surface: string,
+  primary: string,
+  mode: "light" | "dark"
+): SurfaceElevation {
+  if (mode === "dark") {
+    return {
+      card:     lighten(surface, 0.03),
+      elevated: lighten(surface, 0.06),
+      modal:    lighten(surface, 0.10),
+      popover:  lighten(surface, 0.14),
+    };
+  }
+  // Light mode: subtle primary tinting
+  return {
+    card:     mix(surface, primary, 0.02),
+    elevated: mix(surface, primary, 0.04),
+    modal:    mix(surface, primary, 0.06),
+    popover:  mix(surface, primary, 0.08),
   };
 }
