@@ -2,13 +2,14 @@ import { describe, it, expect } from "vitest";
 import { deriveStateColors, deriveAllIntentStates } from "./state-colors";
 import { hexToOklch } from "./color-math";
 import { deriveColors } from "./butterfly";
-import { expectValidHex, expectValidHexAlpha } from "./test-helpers";
+import { expectValidHex } from "./test-helpers";
 
 // ─── deriveStateColors ──────────────────────────────────────────────
 
 describe("deriveStateColors", () => {
   const base = "#1e90ff";
-  const states = deriveStateColors(base);
+  const bg = "#f5f5f5";
+  const states = deriveStateColors(base, bg);
 
   it("returns object with hover, pressed, focused, disabled", () => {
     expect(states).toHaveProperty("hover");
@@ -29,40 +30,48 @@ describe("deriveStateColors", () => {
     expect(pressedLch.L).toBeLessThan(hoverLch.L);
   });
 
-  it("focused is base hex + '4d' suffix (9 chars)", () => {
-    expect(states.focused).toBe(base + "4d");
-    expect(states.focused).toHaveLength(9);
+  it("focused is a solid 7-char hex (no alpha suffix)", () => {
+    expectValidHex(states.focused);
+    expect(states.focused).toHaveLength(7);
+  });
+
+  it("focused L is between base and background", () => {
+    const baseLch = hexToOklch(base);
+    const bgLch = hexToOklch(bg);
+    const focusedLch = hexToOklch(states.focused);
+    const minL = Math.min(baseLch.L, bgLch.L);
+    const maxL = Math.max(baseLch.L, bgLch.L);
+    expect(focusedLch.L).toBeGreaterThanOrEqual(minL - 0.01);
+    expect(focusedLch.L).toBeLessThanOrEqual(maxL + 0.01);
   });
 
   it("disabled is lighter and less saturated than base", () => {
     const baseLch = hexToOklch(base);
-    // Disabled = lighten(desaturate(base, 0.3), 0.15)
-    // The disabled hex is 7-char (no alpha)
     expectValidHex(states.disabled);
     const disabledLch = hexToOklch(states.disabled);
     expect(disabledLch.C).toBeLessThan(baseLch.C);
   });
 
-  it("hover and pressed are valid hex", () => {
+  it("all states are valid hex", () => {
     expectValidHex(states.hover);
     expectValidHex(states.pressed);
+    expectValidHex(states.focused);
+    expectValidHex(states.disabled);
   });
 
-  it("focused is valid hex with alpha", () => {
-    expectValidHexAlpha(states.focused);
-  });
-
-  it("works with pure black", () => {
-    const s = deriveStateColors("#000000");
+  it("works with pure black on white bg", () => {
+    const s = deriveStateColors("#000000", "#ffffff");
     expectValidHex(s.hover);
     expectValidHex(s.pressed);
+    expectValidHex(s.focused);
     expectValidHex(s.disabled);
   });
 
-  it("works with pure white", () => {
-    const s = deriveStateColors("#ffffff");
+  it("works with pure white on dark bg", () => {
+    const s = deriveStateColors("#ffffff", "#1a1a1a");
     expectValidHex(s.hover);
     expectValidHex(s.pressed);
+    expectValidHex(s.focused);
     expectValidHex(s.disabled);
   });
 });
@@ -103,14 +112,15 @@ describe("deriveAllIntentStates", () => {
     }
   });
 
-  it("all focused values end with '4d'", () => {
+  it("all focused values are solid hex (no alpha)", () => {
     for (const intent of intents) {
-      expect(allStates[intent].focused).toMatch(/4d$/);
+      expectValidHex(allStates[intent].focused);
+      expect(allStates[intent].focused).toHaveLength(7);
     }
   });
 
-  it("primary states are derived from the primary color", () => {
-    const primaryStates = deriveStateColors(colors.primary);
+  it("primary states match deriveStateColors with background", () => {
+    const primaryStates = deriveStateColors(colors.primary, colors.background);
     expect(allStates.primary.hover).toBe(primaryStates.hover);
     expect(allStates.primary.pressed).toBe(primaryStates.pressed);
     expect(allStates.primary.focused).toBe(primaryStates.focused);
@@ -122,6 +132,7 @@ describe("deriveAllIntentStates", () => {
     const darkStates = deriveAllIntentStates(darkColors);
     for (const intent of intents) {
       expectValidHex(darkStates[intent].hover);
+      expectValidHex(darkStates[intent].focused);
     }
   });
 });
