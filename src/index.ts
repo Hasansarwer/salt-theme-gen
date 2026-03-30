@@ -10,6 +10,7 @@ export type {
   StateColors,
   IntentStates,
   SurfaceElevation,
+  ColorHarmony,
   AccessibilityReport,
   ContrastEntry,
   ThemePreset,
@@ -56,7 +57,8 @@ export {
 } from "./color-math";
 
 // ─── Color Derivation (for consumers who want partial control) ───────
-export { deriveColors, deriveSurfaceElevation } from "./butterfly";
+export { deriveColors, deriveSurfaceElevation, resolveHarmonyAccents } from "./butterfly";
+export type { DeriveColorsOptions, HarmonyAccents } from "./butterfly";
 export { deriveOnColor, autoCorrectContrast } from "./on-colors";
 export { deriveStateColors, deriveAllIntentStates } from "./state-colors";
 
