@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { deriveColors, deriveSurfaceElevation, adaptiveL, secondaryHueOffset } from "./butterfly";
+import { deriveColors, deriveSurfaceElevation, adaptiveL, secondaryHueOffset, resolveHarmonyAccents } from "./butterfly";
 import { hexToOklch, contrastRatio } from "./color-math";
 import { expectValidHex } from "./test-helpers";
 
@@ -10,18 +10,18 @@ const PRIMARY = "#1e90ff"; // dodger blue
 describe("deriveColors - light mode", () => {
   const colors = deriveColors(PRIMARY, "light");
 
-  it("returns object with all 19 SemanticColors keys", () => {
+  it("returns object with all 21 SemanticColors keys", () => {
     const expectedKeys = [
-      "primary", "secondary", "tertiary", "background", "surface", "text",
+      "primary", "secondary", "tertiary", "quaternary", "background", "surface", "text",
       "muted", "border", "danger", "success", "warning", "info",
-      "onPrimary", "onSecondary", "onTertiary", "onDanger", "onSuccess", "onWarning", "onInfo",
+      "onPrimary", "onSecondary", "onTertiary", "onQuaternary", "onDanger", "onSuccess", "onWarning", "onInfo",
     ];
     for (const key of expectedKeys) {
       expect(colors).toHaveProperty(key);
     }
   });
 
-  it("all 19 values are valid hex strings", () => {
+  it("all 21 values are valid hex strings", () => {
     for (const value of Object.values(colors)) {
       expectValidHex(value);
     }
@@ -415,5 +415,201 @@ describe("secondaryHueOffset", () => {
     let diff = Math.abs(secondaryH - primaryH);
     if (diff > 180) diff = 360 - diff;
     expect(diff).toBeGreaterThanOrEqual(90);
+  });
+});
+
+// ─── deriveColors — quaternary (analogous default) ──────────────────
+
+describe("deriveColors - quaternary (analogous)", () => {
+  const colors = deriveColors("#1e90ff", "light");
+
+  it("quaternary is a valid hex", () => {
+    expectValidHex(colors.quaternary);
+  });
+
+  it("onQuaternary is a valid hex", () => {
+    expectValidHex(colors.onQuaternary);
+  });
+
+  it("onQuaternary meets WCAG AA against quaternary", () => {
+    expect(contrastRatio(colors.onQuaternary, colors.quaternary)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("quaternary hue differs from primary", () => {
+    const pH = hexToOklch(colors.primary).H;
+    const qH = hexToOklch(colors.quaternary).H;
+    let diff = Math.abs(qH - pH);
+    if (diff > 180) diff = 360 - diff;
+    expect(diff).toBeGreaterThan(10);
+  });
+
+  it("quaternary override is respected", () => {
+    const c = deriveColors("#1e90ff", "light", { quaternary: "#abcdef" });
+    expect(c.quaternary).toBe("#abcdef");
+  });
+});
+
+// ─── deriveColors — harmony modes ───────────────────────────────────
+
+describe("deriveColors - harmony modes", () => {
+  const harmonies = ["complementary", "triadic", "split-complementary", "tetradic", "monochromatic"] as const;
+
+  for (const harmony of harmonies) {
+    describe(`harmony: ${harmony}`, () => {
+      const colors = deriveColors("#1e90ff", "light", { harmony });
+
+      it("returns all 21 valid hex colors", () => {
+        const values = Object.values(colors);
+        expect(values).toHaveLength(21);
+        for (const v of values) {
+          expectValidHex(v);
+        }
+      });
+
+      it("onQuaternary meets WCAG AA against quaternary", () => {
+        expect(contrastRatio(colors.onQuaternary, colors.quaternary)).toBeGreaterThanOrEqual(4.5);
+      });
+
+      it("non-accent colors are unchanged vs analogous", () => {
+        const analogous = deriveColors("#1e90ff", "light");
+        expect(colors.background).toBe(analogous.background);
+        expect(colors.surface).toBe(analogous.surface);
+        expect(colors.text).toBe(analogous.text);
+        expect(colors.danger).toBe(analogous.danger);
+      });
+
+      it("works in dark mode", () => {
+        const dark = deriveColors("#1e90ff", "dark", { harmony });
+        for (const v of Object.values(dark)) {
+          expectValidHex(v);
+        }
+      });
+    });
+  }
+
+  it("complementary secondary is ~180° from primary", () => {
+    const colors = deriveColors("#1e90ff", "light", { harmony: "complementary" });
+    const pH = hexToOklch(colors.primary).H;
+    const sH = hexToOklch(colors.secondary).H;
+    let diff = Math.abs(sH - pH);
+    if (diff > 180) diff = 360 - diff;
+    expect(diff).toBeCloseTo(180, -1);
+  });
+
+  it("triadic secondary and tertiary are ~120° apart from primary", () => {
+    const colors = deriveColors("#1e90ff", "light", { harmony: "triadic" });
+    const pH = hexToOklch(colors.primary).H;
+    const sH = hexToOklch(colors.secondary).H;
+    const tH = hexToOklch(colors.tertiary).H;
+    let sDiff = Math.abs(sH - pH); if (sDiff > 180) sDiff = 360 - sDiff;
+    let tDiff = Math.abs(tH - pH); if (tDiff > 180) tDiff = 360 - tDiff;
+    expect(sDiff).toBeCloseTo(120, -1);
+    expect(tDiff).toBeCloseTo(120, -1);
+  });
+
+  it("tetradic produces 4 distinct hues ~90° apart", () => {
+    const colors = deriveColors("#1e90ff", "light", { harmony: "tetradic" });
+    const hues = [colors.primary, colors.secondary, colors.tertiary, colors.quaternary].map(c => hexToOklch(c).H);
+    for (let i = 0; i < hues.length; i++) {
+      for (let j = i + 1; j < hues.length; j++) {
+        let diff = Math.abs(hues[i] - hues[j]);
+        if (diff > 180) diff = 360 - diff;
+        expect(diff).toBeGreaterThan(45);
+      }
+    }
+  });
+
+  it("monochromatic: all accents share primary hue (within 5°)", () => {
+    const colors = deriveColors("#1e90ff", "light", { harmony: "monochromatic" });
+    const pH = hexToOklch(colors.primary).H;
+    for (const key of ["secondary", "tertiary", "quaternary"] as const) {
+      const h = hexToOklch(colors[key]).H;
+      let diff = Math.abs(h - pH);
+      if (diff > 180) diff = 360 - diff;
+      expect(diff).toBeLessThan(5);
+    }
+  });
+
+  it("monochromatic: chroma decreases from secondary to quaternary", () => {
+    const colors = deriveColors("#1e90ff", "light", { harmony: "monochromatic" });
+    const sC = hexToOklch(colors.secondary).C;
+    const tC = hexToOklch(colors.tertiary).C;
+    const qC = hexToOklch(colors.quaternary).C;
+    expect(sC).toBeGreaterThan(tC);
+    expect(tC).toBeGreaterThan(qC);
+  });
+});
+
+// ─── deriveColors — backward compatibility ──────────────────────────
+
+describe("deriveColors - backward compatibility", () => {
+  it("legacy positional API still works", () => {
+    const colors = deriveColors("#1e90ff", "light", "#ff00ff");
+    expect(colors.secondary).toBe("#ff00ff");
+  });
+
+  it("legacy positional API with tertiary still works", () => {
+    const colors = deriveColors("#1e90ff", "light", "#ff00ff", "#00ff00");
+    expect(colors.secondary).toBe("#ff00ff");
+    expect(colors.tertiary).toBe("#00ff00");
+  });
+
+  it("analogous harmony produces same secondary/tertiary as no-harmony", () => {
+    const noHarmony = deriveColors("#1e90ff", "light");
+    const analogous = deriveColors("#1e90ff", "light", { harmony: "analogous" });
+    expect(analogous.secondary).toBe(noHarmony.secondary);
+    expect(analogous.tertiary).toBe(noHarmony.tertiary);
+  });
+
+  it("default (no options) produces same secondary/tertiary as before", () => {
+    const noOpts = deriveColors("#1e90ff", "light");
+    const emptyOpts = deriveColors("#1e90ff", "light", {});
+    expect(noOpts.secondary).toBe(emptyOpts.secondary);
+    expect(noOpts.tertiary).toBe(emptyOpts.tertiary);
+  });
+});
+
+// ─── resolveHarmonyAccents ──────────────────────────────────────────
+
+describe("resolveHarmonyAccents", () => {
+  it("returns null for analogous", () => {
+    expect(resolveHarmonyAccents(200, "analogous")).toBeNull();
+  });
+
+  it("returns null for undefined", () => {
+    expect(resolveHarmonyAccents(200, undefined)).toBeNull();
+  });
+
+  it("complementary secondary offset is 180", () => {
+    const accents = resolveHarmonyAccents(200, "complementary")!;
+    expect(accents.secondary.hueOffset).toBe(180);
+  });
+
+  it("triadic offsets are 120 and 240", () => {
+    const accents = resolveHarmonyAccents(200, "triadic")!;
+    expect(accents.secondary.hueOffset).toBe(120);
+    expect(accents.tertiary.hueOffset).toBe(240);
+  });
+
+  it("tetradic covers all 4 quadrants", () => {
+    const accents = resolveHarmonyAccents(0, "tetradic")!;
+    expect(accents.secondary.hueOffset).toBe(90);
+    expect(accents.tertiary.hueOffset).toBe(180);
+    expect(accents.quaternary.hueOffset).toBe(270);
+  });
+
+  it("monochromatic has zero hue offsets, decreasing chroma", () => {
+    const accents = resolveHarmonyAccents(100, "monochromatic")!;
+    expect(accents.secondary.hueOffset).toBe(0);
+    expect(accents.tertiary.hueOffset).toBe(0);
+    expect(accents.quaternary.hueOffset).toBe(0);
+    expect(accents.secondary.chromaMul).toBeGreaterThan(accents.tertiary.chromaMul);
+    expect(accents.tertiary.chromaMul).toBeGreaterThan(accents.quaternary.chromaMul);
+  });
+
+  it("split-complementary offsets are 150 and 210", () => {
+    const accents = resolveHarmonyAccents(0, "split-complementary")!;
+    expect(accents.secondary.hueOffset).toBe(150);
+    expect(accents.tertiary.hueOffset).toBe(210);
   });
 });

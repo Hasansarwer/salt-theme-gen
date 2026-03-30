@@ -34,7 +34,7 @@ describe("deriveOnColor", () => {
 
   it("works for all light-mode intent colors", () => {
     const colors = deriveColors("#1e90ff", "light");
-    const intents = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"] as const;
+    const intents = ["primary", "secondary", "tertiary", "quaternary", "danger", "success", "warning", "info"] as const;
     for (const intent of intents) {
       const on = deriveOnColor(colors[intent]);
       expect(contrastRatio(on, colors[intent])).toBeGreaterThanOrEqual(4.5);
@@ -43,7 +43,7 @@ describe("deriveOnColor", () => {
 
   it("works for all dark-mode intent colors", () => {
     const colors = deriveColors("#1e90ff", "dark");
-    const intents = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"] as const;
+    const intents = ["primary", "secondary", "tertiary", "quaternary", "danger", "success", "warning", "info"] as const;
     for (const intent of intents) {
       const on = deriveOnColor(colors[intent]);
       expect(contrastRatio(on, colors[intent])).toBeGreaterThanOrEqual(4.5);
@@ -111,16 +111,16 @@ describe("buildAccessibilityReport", () => {
   const report = buildAccessibilityReport(lightColors);
 
   const reportKeys = [
-    "primaryOnBackground", "secondaryOnBackground", "tertiaryOnBackground",
+    "primaryOnBackground", "secondaryOnBackground", "tertiaryOnBackground", "quaternaryOnBackground",
     "textOnBackground", "textOnSurface",
     "dangerOnBackground", "successOnBackground",
     "warningOnBackground", "infoOnBackground",
-    "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary",
+    "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary", "onQuaternaryOnQuaternary",
     "onDangerOnDanger", "onSuccessOnSuccess",
     "onWarningOnWarning", "onInfoOnInfo",
   ];
 
-  it("returns object with all 16 keys", () => {
+  it("returns object with all 18 keys", () => {
     for (const key of reportKeys) {
       expect(report).toHaveProperty(key);
     }
@@ -157,7 +157,7 @@ describe("buildAccessibilityReport", () => {
 
   it("all on-color pairs meet at least AA", () => {
     const onPairs = [
-      "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary",
+      "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary", "onQuaternaryOnQuaternary",
       "onDangerOnDanger", "onSuccessOnSuccess",
       "onWarningOnWarning", "onInfoOnInfo",
     ];

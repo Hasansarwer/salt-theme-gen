@@ -83,10 +83,16 @@ describe("parseThemeJSON - mode validation", () => {
 // ─── colors ─────────────────────────────────────────────────────────
 
 describe("parseThemeJSON - colors validation", () => {
-  it("rejects missing color key", () => {
+  it("rejects missing color key (tertiary)", () => {
     const obj = validThemeObj();
     delete obj.light.colors.tertiary;
     expect(() => parseThemeJSON(obj)).toThrow('missing required key "tertiary"');
+  });
+
+  it("rejects missing color key (quaternary)", () => {
+    const obj = validThemeObj();
+    delete obj.light.colors.quaternary;
+    expect(() => parseThemeJSON(obj)).toThrow('missing required key "quaternary"');
   });
 
   it("rejects non-hex color value", () => {
@@ -183,10 +189,16 @@ describe("parseThemeJSON - fontLevel validation", () => {
 // ─── states ─────────────────────────────────────────────────────────
 
 describe("parseThemeJSON - states validation", () => {
-  it("rejects missing intent in states", () => {
+  it("rejects missing intent in states (tertiary)", () => {
     const obj = validThemeObj();
     delete obj.light.states.tertiary;
     expect(() => parseThemeJSON(obj)).toThrow('missing required key "tertiary"');
+  });
+
+  it("rejects missing intent in states (quaternary)", () => {
+    const obj = validThemeObj();
+    delete obj.light.states.quaternary;
+    expect(() => parseThemeJSON(obj)).toThrow('missing required key "quaternary"');
   });
 
   it("rejects missing state key in intent", () => {
@@ -205,10 +217,16 @@ describe("parseThemeJSON - states validation", () => {
 // ─── accessibility ──────────────────────────────────────────────────
 
 describe("parseThemeJSON - accessibility validation", () => {
-  it("rejects missing accessibility key", () => {
+  it("rejects missing accessibility key (onTertiaryOnTertiary)", () => {
     const obj = validThemeObj();
     delete obj.light.accessibility.onTertiaryOnTertiary;
     expect(() => parseThemeJSON(obj)).toThrow('missing required key "onTertiaryOnTertiary"');
+  });
+
+  it("rejects missing accessibility key (onQuaternaryOnQuaternary)", () => {
+    const obj = validThemeObj();
+    delete obj.light.accessibility.onQuaternaryOnQuaternary;
+    expect(() => parseThemeJSON(obj)).toThrow('missing required key "onQuaternaryOnQuaternary"');
   });
 
   it("rejects non-number ratio", () => {

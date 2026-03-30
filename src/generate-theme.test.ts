@@ -42,11 +42,11 @@ describe("generateTheme - defaults", () => {
     expect(theme.light.fontSizes).toEqual(FONT_SIZE_PRESETS.default);
   });
 
-  it("light.colors has all 19 keys", () => {
+  it("light.colors has all 21 keys", () => {
     const keys = [
-      "primary", "secondary", "tertiary", "background", "surface", "text",
+      "primary", "secondary", "tertiary", "quaternary", "background", "surface", "text",
       "muted", "border", "danger", "success", "warning", "info",
-      "onPrimary", "onSecondary", "onTertiary", "onDanger", "onSuccess", "onWarning", "onInfo",
+      "onPrimary", "onSecondary", "onTertiary", "onQuaternary", "onDanger", "onSuccess", "onWarning", "onInfo",
     ];
     for (const key of keys) {
       expect(theme.light.colors).toHaveProperty(key);
@@ -207,8 +207,8 @@ describe("generateTheme - output structure", () => {
     expect(lightKeys).toEqual(darkKeys);
   });
 
-  it("states object has 7 intents with 4 states each", () => {
-    const intents = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"];
+  it("states object has 8 intents with 4 states each", () => {
+    const intents = ["primary", "secondary", "tertiary", "quaternary", "danger", "success", "warning", "info"];
     const stateKeys = ["hover", "pressed", "focused", "disabled"];
     for (const intent of intents) {
       for (const state of stateKeys) {
@@ -217,8 +217,8 @@ describe("generateTheme - output structure", () => {
     }
   });
 
-  it("accessibility object has 16 entries", () => {
-    expect(Object.keys(theme.light.accessibility)).toHaveLength(16);
+  it("accessibility object has 18 entries", () => {
+    expect(Object.keys(theme.light.accessibility)).toHaveLength(18);
   });
 
   it("all color values in output match hex format", () => {
@@ -231,6 +231,39 @@ describe("generateTheme - output structure", () => {
   });
 });
 
+// ─── harmony option ─────────────────────────────────────────────────
+
+describe("generateTheme - harmony option", () => {
+  it("complementary harmony produces valid theme", () => {
+    const theme = generateTheme({ primary: "#1e90ff", harmony: "complementary" });
+    for (const v of Object.values(theme.light.colors)) {
+      expectValidHex(v);
+    }
+  });
+
+  it("tetradic harmony produces valid theme in both modes", () => {
+    const theme = generateTheme({ primary: "#ff0000", harmony: "tetradic" });
+    expectValidHex(theme.light.colors.quaternary);
+    expectValidHex(theme.dark.colors.quaternary);
+  });
+
+  it("harmony + quaternary override: override wins", () => {
+    const theme = generateTheme({ primary: "#1e90ff", harmony: "triadic", quaternary: "#abcdef" });
+    expect(theme.light.colors.quaternary).toBe("#abcdef");
+    expect(theme.dark.colors.quaternary).toBe("#abcdef");
+  });
+
+  it("all harmonies pass WCAG AA for on-colors across all presets", () => {
+    const harmonies = ["complementary", "triadic", "split-complementary", "tetradic", "monochromatic"] as const;
+    for (const harmony of harmonies) {
+      const theme = generateTheme({ primary: "#1e90ff", harmony });
+      for (const mode of [theme.light, theme.dark]) {
+        expect(contrastRatio(mode.colors.onQuaternary, mode.colors.quaternary)).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+});
+
 // ─── WCAG compliance across all presets ─────────────────────────────
 
 describe("generateTheme - WCAG compliance", () => {
@@ -238,6 +271,7 @@ describe("generateTheme - WCAG compliance", () => {
     ["onPrimary", "primary"],
     ["onSecondary", "secondary"],
     ["onTertiary", "tertiary"],
+    ["onQuaternary", "quaternary"],
     ["onDanger", "danger"],
     ["onSuccess", "success"],
     ["onWarning", "warning"],
