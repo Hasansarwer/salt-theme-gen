@@ -2,7 +2,7 @@
 
 OKLCH-based design system generator. Generate complete light + dark themes from a single color.
 
-Zero dependencies. Pure TypeScript. 
+Zero dependencies. Pure TypeScript. Platform agnostic — works with React Native, React, Next.js, Node, Bun, Deno, or any JavaScript runtime.
 
 > Formerly `react-native-salt-theme-gen`. If you're upgrading, just change your import — the API is the same.
 
@@ -10,6 +10,7 @@ Zero dependencies. Pure TypeScript.
 
 ```bash
 npm install salt-theme-gen
+
 ```
 
 ## Quick Start
