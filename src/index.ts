@@ -62,5 +62,11 @@ export type { DeriveColorsOptions, HarmonyAccents } from "./butterfly";
 export { deriveOnColor, autoCorrectContrast } from "./on-colors";
 export { deriveStateColors, deriveAllIntentStates } from "./state-colors";
 
+// ─── Theme Adjustment & Diffing ──────────────────────────────────────
+export { adjustTheme } from "./adjust-theme";
+export type { ThemeModeOverrides, ThemeOverrides } from "./adjust-theme";
+export { diffTheme } from "./diff-theme";
+export type { FieldChange, ThemeModeDiff, ThemeDiff } from "./diff-theme";
+
 // ─── Validation (for deserialized themes) ────────────────────────────
 export { parseThemeJSON } from "./validate";
