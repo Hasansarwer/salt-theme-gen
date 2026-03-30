@@ -1,9 +1,9 @@
 import { hexToOklch, oklchToHex, clampOklch, lighten, mix } from "./color-math";
 import { deriveOnColor, autoCorrectContrast } from "./on-colors";
-import type { OKLCH, SemanticColors, SurfaceElevation } from "./types";
+import type { OKLCH, SemanticColors, SurfaceElevation, ColorHarmony } from "./types";
 
 // ─── OKLCH Butterfly Rule ────────────────────────────────────────────
-// Derives all 12 base colors + 7 "on" colors from a single primary.
+// Derives all 13 base colors + 8 "on" colors from a single primary.
 // All derivation happens in OKLCH space for perceptual uniformity.
 
 type DerivationRule = {
@@ -32,6 +32,71 @@ export function secondaryHueOffset(primaryH: number): number {
   const t = (1 + Math.cos((h * Math.PI) / 180)) / 2; // 1 at H=0, 0 at H=180
   return 60 + 60 * t; // 60° (cool) → 120° (warm)
 }
+
+// ─── Color Harmony ──────────────────────────────────────────────────
+
+type AccentSpec = { hueOffset: number; chromaMul: number };
+
+export type HarmonyAccents = {
+  secondary: AccentSpec;
+  tertiary: AccentSpec;
+  quaternary: AccentSpec;
+};
+
+/**
+ * Resolve hue offsets and chroma multipliers for the 3 accent colors
+ * based on the chosen color harmony strategy.
+ *
+ * "analogous" returns null — the caller should fall through to the
+ * default LIGHT_RULES/DARK_RULES derivation for backward compatibility.
+ */
+export function resolveHarmonyAccents(
+  primaryH: number,
+  harmony: ColorHarmony | undefined
+): HarmonyAccents | null {
+  if (!harmony || harmony === "analogous") return null;
+
+  switch (harmony) {
+    case "complementary":
+      return {
+        secondary:  { hueOffset: 180, chromaMul: 1 },
+        tertiary:   { hueOffset: 0,   chromaMul: 0.20 },
+        quaternary: { hueOffset: 0,   chromaMul: 0.12 },
+      };
+    case "triadic":
+      return {
+        secondary:  { hueOffset: 120, chromaMul: 1 },
+        tertiary:   { hueOffset: 240, chromaMul: 1 },
+        quaternary: { hueOffset: 0,   chromaMul: 0.20 },
+      };
+    case "split-complementary":
+      return {
+        secondary:  { hueOffset: 150, chromaMul: 1 },
+        tertiary:   { hueOffset: 210, chromaMul: 1 },
+        quaternary: { hueOffset: 0,   chromaMul: 0.20 },
+      };
+    case "tetradic":
+      return {
+        secondary:  { hueOffset: 90,  chromaMul: 1 },
+        tertiary:   { hueOffset: 180, chromaMul: 1 },
+        quaternary: { hueOffset: 270, chromaMul: 1 },
+      };
+    case "monochromatic":
+      return {
+        secondary:  { hueOffset: 0, chromaMul: 0.60 },
+        tertiary:   { hueOffset: 0, chromaMul: 0.35 },
+        quaternary: { hueOffset: 0, chromaMul: 0.15 },
+      };
+  }
+}
+
+/** Options object for the new deriveColors API. */
+export type DeriveColorsOptions = {
+  harmony?: ColorHarmony;
+  secondary?: string;
+  tertiary?: string;
+  quaternary?: string;
+};
 
 const LIGHT_RULES: Record<string, DerivationRule> = {
   primary:    { L: (p) => adaptiveL(0.55, p.H),        C: (p) => p.C,        H: (p) => p.H },
@@ -82,30 +147,66 @@ function applyRule(
 }
 
 /**
- * Derive all 19 semantic colors from a primary HEX using the OKLCH butterfly rule.
+ * Derive all 21 semantic colors from a primary HEX using the OKLCH butterfly rule.
+ *
+ * Overloads:
+ * - `deriveColors(hex, mode)` — default analogous harmony
+ * - `deriveColors(hex, mode, options)` — new API with harmony + overrides
+ * - `deriveColors(hex, mode, secondary?, tertiary?)` — legacy positional API
  */
 export function deriveColors(
   primaryHex: string,
   mode: "light" | "dark",
-  secondaryOverride?: string,
-  tertiaryOverride?: string
+  optionsOrSecondary?: DeriveColorsOptions | string,
+  legacyTertiary?: string
 ): SemanticColors {
+  // Normalize overloads into a single options object
+  let opts: DeriveColorsOptions = {};
+  if (typeof optionsOrSecondary === "string") {
+    opts = { secondary: optionsOrSecondary, tertiary: legacyTertiary };
+  } else if (optionsOrSecondary) {
+    opts = optionsOrSecondary;
+  }
+
   const primary = hexToOklch(primaryHex);
   const rules = mode === "light" ? LIGHT_RULES : DARK_RULES;
+  const harmonyAccents = resolveHarmonyAccents(primary.H, opts.harmony);
 
-  // Derive 12 base colors
+  // Derive 12 base colors from static rules
   const base: Record<string, string> = {};
   for (const [key, rule] of Object.entries(rules)) {
     base[key] = oklchToHex(applyRule(rule, primary));
   }
 
-  // Override secondary/tertiary if provided
-  if (secondaryOverride) {
-    base.secondary = secondaryOverride;
+  // When a non-analogous harmony is active, re-derive accent hues
+  if (harmonyAccents) {
+    const baseL = mode === "light" ? 0.55 : 0.72;
+    const amp = mode === "light" ? 0.05 : 0.04;
+    const baseCMul = mode === "light" ? 0.85 : 0.8;
+
+    for (const [name, spec] of Object.entries(harmonyAccents) as [keyof HarmonyAccents, AccentSpec][]) {
+      const h = (primary.H + spec.hueOffset) % 360;
+      const L = adaptiveL(baseL, h, amp);
+      const C = primary.C * baseCMul * spec.chromaMul;
+      base[name] = oklchToHex(clampOklch({ L, C, H: h }));
+    }
+  } else {
+    // Analogous: quaternary = primary - secondaryHueOffset * 0.5
+    const qHue = (primary.H - secondaryHueOffset(primary.H) * 0.5 + 360) % 360;
+    const baseL = mode === "light" ? 0.55 : 0.72;
+    const amp = mode === "light" ? 0.05 : 0.04;
+    const cMul = mode === "light" ? 0.70 : 0.65;
+    base.quaternary = oklchToHex(clampOklch({
+      L: adaptiveL(baseL, qHue, amp),
+      C: primary.C * cMul,
+      H: qHue,
+    }));
   }
-  if (tertiaryOverride) {
-    base.tertiary = tertiaryOverride;
-  }
+
+  // Apply explicit overrides
+  if (opts.secondary) base.secondary = opts.secondary;
+  if (opts.tertiary) base.tertiary = opts.tertiary;
+  if (opts.quaternary) base.quaternary = opts.quaternary;
 
   // Auto-correct intent colors against background for WCAG AA (4.5:1)
   const intentKeys = ["danger", "success", "warning", "info"] as const;
@@ -113,10 +214,11 @@ export function deriveColors(
     base[key] = autoCorrectContrast(base[key], base.background, 4.5);
   }
 
-  // Derive 7 "on" colors with WCAG auto-correction
+  // Derive 8 "on" colors with WCAG auto-correction
   const onPrimary = deriveOnColor(base.primary);
   const onSecondary = deriveOnColor(base.secondary);
   const onTertiary = deriveOnColor(base.tertiary);
+  const onQuaternary = deriveOnColor(base.quaternary);
   const onDanger = deriveOnColor(base.danger);
   const onSuccess = deriveOnColor(base.success);
   const onWarning = deriveOnColor(base.warning);
@@ -126,6 +228,7 @@ export function deriveColors(
     primary: base.primary,
     secondary: base.secondary,
     tertiary: base.tertiary,
+    quaternary: base.quaternary,
     background: base.background,
     surface: base.surface,
     text: base.text,
@@ -138,6 +241,7 @@ export function deriveColors(
     onPrimary,
     onSecondary,
     onTertiary,
+    onQuaternary,
     onDanger,
     onSuccess,
     onWarning,
