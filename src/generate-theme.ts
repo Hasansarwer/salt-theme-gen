@@ -6,6 +6,7 @@ import { SPACING_PRESETS } from "./presets/spacing-presets";
 import { RADIUS_PRESETS } from "./presets/radius-presets";
 import { FONT_SIZE_PRESETS } from "./presets/font-size-presets";
 import { NATURE_PRESETS } from "./presets/nature-presets";
+import type { DeriveColorsOptions } from "./butterfly";
 import type {
   GenerateThemeOptions,
   GeneratedTheme,
@@ -43,13 +44,13 @@ export function generateTheme(options: GenerateThemeOptions = {}): GeneratedThem
   // 1. Resolve primary color
   const primaryHex = resolvePrimary(options);
 
-  // 2. Resolve color overrides
-  const secondaryOverride = options.secondary
-    ? parseColor(options.secondary)
-    : undefined;
-  const tertiaryOverride = options.tertiary
-    ? parseColor(options.tertiary)
-    : undefined;
+  // 2. Resolve color overrides + harmony
+  const colorOpts: DeriveColorsOptions = {
+    harmony: options.harmony,
+    secondary: options.secondary ? parseColor(options.secondary) : undefined,
+    tertiary: options.tertiary ? parseColor(options.tertiary) : undefined,
+    quaternary: options.quaternary ? parseColor(options.quaternary) : undefined,
+  };
 
   // 3. Resolve scales
   const spacing = resolveScale<SpacingPreset, SpacingScale>(
@@ -72,8 +73,8 @@ export function generateTheme(options: GenerateThemeOptions = {}): GeneratedThem
   const fontLevel = Math.max(8, Math.min(18, options.fontLevel ?? 16)) as FontLevel;
 
   // 5. Generate both modes
-  const light = generateMode("light", primaryHex, secondaryOverride, tertiaryOverride, spacing, radius, fontSize, fontLevel);
-  const dark = generateMode("dark", primaryHex, secondaryOverride, tertiaryOverride, spacing, radius, fontSize, fontLevel);
+  const light = generateMode("light", primaryHex, colorOpts, spacing, radius, fontSize, fontLevel);
+  const dark = generateMode("dark", primaryHex, colorOpts, spacing, radius, fontSize, fontLevel);
 
   return { light, dark };
 }
@@ -81,14 +82,13 @@ export function generateTheme(options: GenerateThemeOptions = {}): GeneratedThem
 function generateMode(
   mode: "light" | "dark",
   primaryHex: string,
-  secondaryOverride: string | undefined,
-  tertiaryOverride: string | undefined,
+  colorOpts: DeriveColorsOptions,
   spacing: SpacingScale,
   radius: RadiusScale,
   fontSizes: FontSizeScale,
   fontLevel: FontLevel
 ): GeneratedThemeMode {
-  const colors = deriveColors(primaryHex, mode, secondaryOverride, tertiaryOverride);
+  const colors = deriveColors(primaryHex, mode, colorOpts);
   const surfaceElevation = deriveSurfaceElevation(colors.surface, colors.primary, mode);
   const states = deriveAllIntentStates(colors);
   const accessibility = buildAccessibilityReport(colors);
