@@ -4,9 +4,9 @@ import type { GeneratedTheme, GeneratedThemeMode } from "./types";
 // ─── Shape Definitions ──────────────────────────────────────────────
 
 const SEMANTIC_COLOR_KEYS = [
-  "primary", "secondary", "tertiary", "background", "surface", "text",
+  "primary", "secondary", "tertiary", "quaternary", "background", "surface", "text",
   "muted", "border", "danger", "success", "warning", "info",
-  "onPrimary", "onSecondary", "onTertiary", "onDanger", "onSuccess", "onWarning", "onInfo",
+  "onPrimary", "onSecondary", "onTertiary", "onQuaternary", "onDanger", "onSuccess", "onWarning", "onInfo",
 ] as const;
 
 const SURFACE_ELEVATION_KEYS = ["card", "elevated", "modal", "popover"] as const;
@@ -15,14 +15,14 @@ const SPACING_KEYS = ["none", "xs", "sm", "md", "lg", "xl", "xxl"] as const;
 const RADIUS_KEYS = ["none", "sm", "md", "lg", "xl", "xxl", "pill"] as const;
 const FONT_SIZE_KEYS = ["xs", "sm", "md", "lg", "xl", "xxl", "3xl"] as const;
 
-const INTENT_KEYS = ["primary", "secondary", "tertiary", "danger", "success", "warning", "info"] as const;
+const INTENT_KEYS = ["primary", "secondary", "tertiary", "quaternary", "danger", "success", "warning", "info"] as const;
 const STATE_KEYS = ["hover", "pressed", "focused", "disabled"] as const;
 
 const ACCESSIBILITY_KEYS = [
-  "primaryOnBackground", "secondaryOnBackground", "tertiaryOnBackground",
+  "primaryOnBackground", "secondaryOnBackground", "tertiaryOnBackground", "quaternaryOnBackground",
   "textOnBackground", "textOnSurface",
   "dangerOnBackground", "successOnBackground", "warningOnBackground", "infoOnBackground",
-  "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary",
+  "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary", "onQuaternaryOnQuaternary",
   "onDangerOnDanger", "onSuccessOnSuccess", "onWarningOnWarning", "onInfoOnInfo",
 ] as const;
 
