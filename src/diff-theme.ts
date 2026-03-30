@@ -1,0 +1,155 @@
+import type {
+  GeneratedTheme,
+  GeneratedThemeMode,
+  SemanticColors,
+  SurfaceElevation,
+  SpacingScale,
+  RadiusScale,
+  FontSizeScale,
+  IntentStates,
+  StateColors,
+  AccessibilityReport,
+  ContrastEntry,
+} from "./types";
+
+// ─── Types ─────────────────────────────��────────────────────────────
+
+export type FieldChange<T = unknown> = { old: T; new: T };
+
+export type ThemeModeDiff = {
+  colors?: Partial<Record<keyof SemanticColors, FieldChange<string>>>;
+  surfaceElevation?: Partial<Record<keyof SurfaceElevation, FieldChange<string>>>;
+  spacing?: Partial<Record<keyof SpacingScale, FieldChange<number>>>;
+  radius?: Partial<Record<keyof RadiusScale, FieldChange<number>>>;
+  fontSizes?: Partial<Record<keyof FontSizeScale, FieldChange<number>>>;
+  fontLevel?: FieldChange<number>;
+  states?: Partial<Record<keyof IntentStates, Partial<Record<keyof StateColors, FieldChange<string>>>>>;
+  accessibility?: Partial<Record<keyof AccessibilityReport, { ratio?: FieldChange<number>; level?: FieldChange<string> }>>;
+};
+
+export type ThemeDiff = {
+  light: ThemeModeDiff;
+  dark: ThemeModeDiff;
+  identical: boolean;
+};
+
+// ─── Constants ───────────��──────────────────────────────────────────
+
+const SEMANTIC_KEYS: (keyof SemanticColors)[] = [
+  "primary", "secondary", "tertiary", "quaternary", "background", "surface", "text",
+  "muted", "border", "danger", "success", "warning", "info",
+  "onPrimary", "onSecondary", "onTertiary", "onQuaternary", "onDanger", "onSuccess", "onWarning", "onInfo",
+];
+
+const ELEVATION_KEYS: (keyof SurfaceElevation)[] = ["card", "elevated", "modal", "popover"];
+const SPACING_KEYS: (keyof SpacingScale)[] = ["none", "xs", "sm", "md", "lg", "xl", "xxl"];
+const RADIUS_KEYS: (keyof RadiusScale)[] = ["none", "sm", "md", "lg", "xl", "xxl", "pill"];
+const FONT_SIZE_KEYS: (keyof FontSizeScale)[] = ["xs", "sm", "md", "lg", "xl", "xxl", "3xl"];
+const INTENT_KEYS: (keyof IntentStates)[] = ["primary", "secondary", "tertiary", "quaternary", "danger", "success", "warning", "info"];
+const STATE_KEYS: (keyof StateColors)[] = ["hover", "pressed", "focused", "disabled"];
+const ACCESSIBILITY_KEYS: (keyof AccessibilityReport)[] = [
+  "primaryOnBackground", "secondaryOnBackground", "tertiaryOnBackground", "quaternaryOnBackground",
+  "textOnBackground", "textOnSurface",
+  "dangerOnBackground", "successOnBackground", "warningOnBackground", "infoOnBackground",
+  "onPrimaryOnPrimary", "onSecondaryOnSecondary", "onTertiaryOnTertiary", "onQuaternaryOnQuaternary",
+  "onDangerOnDanger", "onSuccessOnSuccess", "onWarningOnWarning", "onInfoOnInfo",
+];
+
+// ─── Helpers ───────────────────────────────────────���────────────────
+
+function diffFlat<K extends string, V>(
+  a: Record<K, V>,
+  b: Record<K, V>,
+  keys: K[]
+): Partial<Record<K, FieldChange<V>>> | undefined {
+  let result: Partial<Record<K, FieldChange<V>>> | undefined;
+  for (const key of keys) {
+    if (a[key] !== b[key]) {
+      if (!result) result = {};
+      result[key] = { old: a[key], new: b[key] };
+    }
+  }
+  return result;
+}
+
+function diffStates(a: IntentStates, b: IntentStates): ThemeModeDiff["states"] {
+  let result: Partial<Record<keyof IntentStates, Partial<Record<keyof StateColors, FieldChange<string>>>>> | undefined;
+  for (const intent of INTENT_KEYS) {
+    const d = diffFlat(a[intent], b[intent], STATE_KEYS);
+    if (d) {
+      if (!result) result = {};
+      result[intent] = d;
+    }
+  }
+  return result;
+}
+
+function diffAccessibility(a: AccessibilityReport, b: AccessibilityReport): ThemeModeDiff["accessibility"] {
+  let result: Partial<Record<keyof AccessibilityReport, { ratio?: FieldChange<number>; level?: FieldChange<string> }>> | undefined;
+  for (const key of ACCESSIBILITY_KEYS) {
+    const ea = a[key];
+    const eb = b[key];
+    let entry: { ratio?: FieldChange<number>; level?: FieldChange<string> } | undefined;
+    if (ea.ratio !== eb.ratio) {
+      entry = { ratio: { old: ea.ratio, new: eb.ratio } };
+    }
+    if (ea.level !== eb.level) {
+      entry = { ...entry, level: { old: ea.level, new: eb.level } };
+    }
+    if (entry) {
+      if (!result) result = {};
+      result[key] = entry;
+    }
+  }
+  return result;
+}
+
+function diffMode(a: GeneratedThemeMode, b: GeneratedThemeMode): ThemeModeDiff {
+  const diff: ThemeModeDiff = {};
+
+  const colors = diffFlat(a.colors, b.colors, SEMANTIC_KEYS);
+  if (colors) diff.colors = colors;
+
+  const surfaceElevation = diffFlat(a.surfaceElevation, b.surfaceElevation, ELEVATION_KEYS);
+  if (surfaceElevation) diff.surfaceElevation = surfaceElevation;
+
+  const spacing = diffFlat(a.spacing, b.spacing, SPACING_KEYS);
+  if (spacing) diff.spacing = spacing;
+
+  const radius = diffFlat(a.radius, b.radius, RADIUS_KEYS);
+  if (radius) diff.radius = radius;
+
+  const fontSizes = diffFlat(a.fontSizes, b.fontSizes, FONT_SIZE_KEYS);
+  if (fontSizes) diff.fontSizes = fontSizes;
+
+  if (a.fontLevel !== b.fontLevel) {
+    diff.fontLevel = { old: a.fontLevel, new: b.fontLevel };
+  }
+
+  const states = diffStates(a.states, b.states);
+  if (states) diff.states = states;
+
+  const accessibility = diffAccessibility(a.accessibility, b.accessibility);
+  if (accessibility) diff.accessibility = accessibility;
+
+  return diff;
+}
+
+// ─── Public API ─────────────────────��───────────────────────────────
+
+/**
+ * Compare two themes and return a structured diff of all changed fields.
+ * Sections are only present in the result if they contain changes.
+ *
+ * @example
+ * const diff = diffTheme(oldTheme, newTheme);
+ * if (!diff.identical) {
+ *   console.log("Light primary changed:", diff.light.colors?.primary);
+ * }
+ */
+export function diffTheme(a: GeneratedTheme, b: GeneratedTheme): ThemeDiff {
+  const light = diffMode(a.light, b.light);
+  const dark = diffMode(a.dark, b.dark);
+  const identical = Object.keys(light).length === 0 && Object.keys(dark).length === 0;
+  return { light, dark, identical };
+}
