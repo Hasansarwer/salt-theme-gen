@@ -8,6 +8,16 @@ export type OKLCH = { L: number; C: number; H: number }; // L: 0–1, C: 0–~0.
 
 export type FontLevel = 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18;
 
+// ─── Color Harmony ──────────────────────────────────────────────────
+
+export type ColorHarmony =
+  | "analogous"
+  | "complementary"
+  | "triadic"
+  | "split-complementary"
+  | "tetradic"
+  | "monochromatic";
+
 // ─── Theme Presets ───────────────────────────────────────────────────
 
 export type ThemePreset =
@@ -68,12 +78,13 @@ export type FontSizeScale = {
   "3xl": number;
 };
 
-// ─── Semantic Colors (19 keys, matching ui-kit colors) ───────────────
+// ─── Semantic Colors (21 keys, matching ui-kit colors) ───────────────
 
 export type SemanticColors = {
   primary: string;
   secondary: string;
   tertiary: string;
+  quaternary: string;
   background: string;
   surface: string;
   text: string;
@@ -86,6 +97,7 @@ export type SemanticColors = {
   onPrimary: string;
   onSecondary: string;
   onTertiary: string;
+  onQuaternary: string;
   onDanger: string;
   onSuccess: string;
   onWarning: string;
@@ -105,6 +117,7 @@ export type IntentStates = {
   primary: StateColors;
   secondary: StateColors;
   tertiary: StateColors;
+  quaternary: StateColors;
   danger: StateColors;
   success: StateColors;
   warning: StateColors;
@@ -131,6 +144,7 @@ export type AccessibilityReport = {
   primaryOnBackground: ContrastEntry;
   secondaryOnBackground: ContrastEntry;
   tertiaryOnBackground: ContrastEntry;
+  quaternaryOnBackground: ContrastEntry;
   textOnBackground: ContrastEntry;
   textOnSurface: ContrastEntry;
   dangerOnBackground: ContrastEntry;
@@ -140,6 +154,7 @@ export type AccessibilityReport = {
   onPrimaryOnPrimary: ContrastEntry;
   onSecondaryOnSecondary: ContrastEntry;
   onTertiaryOnTertiary: ContrastEntry;
+  onQuaternaryOnQuaternary: ContrastEntry;
   onDangerOnDanger: ContrastEntry;
   onSuccessOnSuccess: ContrastEntry;
   onWarningOnWarning: ContrastEntry;
@@ -176,6 +191,10 @@ export type GenerateThemeOptions = {
   secondary?: string;
   /** Override auto-derived tertiary color */
   tertiary?: string;
+  /** Override auto-derived quaternary color */
+  quaternary?: string;
+  /** Color harmony strategy (default: "analogous") */
+  harmony?: ColorHarmony;
   /** Spacing scale preset or custom object */
   spacing?: SpacingPreset | SpacingScale;
   /** Font size scale preset or custom object */
