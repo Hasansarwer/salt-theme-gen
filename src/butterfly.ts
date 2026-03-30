@@ -166,6 +166,9 @@ export function deriveColors(
     opts = { secondary: optionsOrSecondary, tertiary: legacyTertiary };
   } else if (optionsOrSecondary) {
     opts = optionsOrSecondary;
+  } else if (legacyTertiary) {
+    // deriveColors(hex, mode, undefined, tertiary) — legacy with no secondary
+    opts = { tertiary: legacyTertiary };
   }
 
   const primary = hexToOklch(primaryHex);
