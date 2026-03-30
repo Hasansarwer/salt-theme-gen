@@ -4,11 +4,12 @@ OKLCH-based design system generator. Generate complete light + dark themes from 
 
 Zero dependencies. Pure TypeScript. 
 
+> Formerly `react-native-salt-theme-gen`. If you're upgrading, just change your import — the API is the same.
+
 ## Install
 
 ```bash
 npm install salt-theme-gen
-
 ```
 
 ## Quick Start
