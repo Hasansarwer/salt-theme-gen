@@ -2,14 +2,13 @@
 
 OKLCH-based design system generator. Generate complete light + dark themes from a single color.
 
-Zero dependencies. Pure TypeScript. Works with npm, Bun, Deno, and CDNs.
+Zero dependencies. Pure TypeScript. 
 
 ## Install
 
 ```bash
 npm install salt-theme-gen
-# or
-bun add salt-theme-gen
+
 ```
 
 ## Quick Start
@@ -55,7 +54,7 @@ type GeneratedThemeMode = {
   spacing: SpacingScale;
   radius: RadiusScale;
   fontSizes: FontSizeScale;
-  fontLevel: FontLevel; // 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18
+  fontLevel: FontLevel; // 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 (consumed by react-native-salt, not this library)
   states: IntentStates;
   accessibility: AccessibilityReport;
 };
@@ -296,7 +295,7 @@ generateTheme({
 | `spacing`    | `SpacingPreset \| SpacingScale`   | `"default"`   | Spacing scale                        |
 | `fontSize`   | `FontSizePreset \| FontSizeScale` | `"default"`   | Font size scale                      |
 | `radius`     | `RadiusPreset \| RadiusScale`     | `"default"`   | Border radius scale                  |
-| `fontLevel`  | `number`                          | `16`          | Base font level (8-18)               |
+| `fontLevel`  | `number`                          | `16`          | Base font level (8-18), consumed by react-native-salt |
 
 ### `adjustTheme(theme, overrides): GeneratedTheme`
 
