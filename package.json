@@ -1,7 +1,7 @@
 {
   "name": "salt-theme-gen",
   "version": "1.1.1",
-  "description": "OKLCH-based design system generator for React Native — generate complete themes from a single color",
+  "description": "OKLCH-based design system generator — generate complete themes from a single color. Platform agnostic: React Native, React, Next.js, Node, Bun, Deno.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
@@ -24,7 +24,6 @@
     "test:watch": "vitest"
   },
   "keywords": [
-    "react-native",
     "theme",
     "design-system",
     "oklch",
@@ -37,7 +36,11 @@
     "accessibility",
     "dark-mode",
     "color-science",
-    "perceptual"
+    "perceptual",
+    "react-native",
+    "react",
+    "nextjs",
+    "platform-agnostic"
   ],
   "author": "hasan_sarwer",
   "license": "MIT",
