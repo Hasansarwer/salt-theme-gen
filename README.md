@@ -557,6 +557,37 @@ primary hex
   +-- buildAccessibilityReport() 18 contrast entries with WCAG levels
 ```
 
+## Build-time Usage (zero runtime cost)
+
+For apps with static themes, generate at build time and ship only the JSON result. The library adds **0 KB** to your production bundle.
+
+```bash
+npm install -D salt-theme-gen
+```
+
+```typescript
+// scripts/generate-themes.ts
+import { generateTheme } from "salt-theme-gen";
+import { writeFileSync } from "fs";
+
+const themes = {
+  ocean: generateTheme({ preset: "ocean" }),
+  sunset: generateTheme({ preset: "sunset" }),
+  custom: generateTheme({ primary: "#0E9D8E", harmony: "complementary" }),
+};
+
+writeFileSync("src/generated-themes.json", JSON.stringify(themes));
+```
+
+Then in your app:
+
+```typescript
+import themes from "./generated-themes.json";
+// Just a JSON import — no generation logic in the bundle
+```
+
+For dynamic theme generation (e.g., user picks a color at runtime), install as a regular dependency instead.
+
 ## Use with react-native-salt
 
 ```tsx
