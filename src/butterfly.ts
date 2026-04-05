@@ -206,16 +206,20 @@ export function deriveColors(
     }));
   }
 
-  // Apply explicit overrides
+  // Auto-correct derived colors against background for WCAG AA (4.5:1)
+  // This runs BEFORE explicit overrides so user-provided colors are respected.
+  const autoCorrectKeys = [
+    "primary", "secondary", "tertiary", "quaternary",
+    "danger", "success", "warning", "info",
+  ] as const;
+  for (const key of autoCorrectKeys) {
+    base[key] = autoCorrectContrast(base[key], base.background, 4.5);
+  }
+
+  // Apply explicit overrides (user intent wins — no auto-correction)
   if (opts.secondary) base.secondary = opts.secondary;
   if (opts.tertiary) base.tertiary = opts.tertiary;
   if (opts.quaternary) base.quaternary = opts.quaternary;
-
-  // Auto-correct intent colors against background for WCAG AA (4.5:1)
-  const intentKeys = ["danger", "success", "warning", "info"] as const;
-  for (const key of intentKeys) {
-    base[key] = autoCorrectContrast(base[key], base.background, 4.5);
-  }
 
   // Derive 8 "on" colors with WCAG auto-correction
   const onPrimary = deriveOnColor(base.primary);

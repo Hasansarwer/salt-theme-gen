@@ -27,10 +27,13 @@ describe("deriveColors - light mode", () => {
     }
   });
 
-  it("primary L is hue-adaptive around 0.55", () => {
+  it("primary L is hue-adaptive around 0.55 (may be lowered by WCAG auto-correction)", () => {
     const lch = hexToOklch(colors.primary);
     const primaryH = hexToOklch(PRIMARY).H;
-    expect(lch.L).toBeCloseTo(adaptiveL(0.55, primaryH), 1);
+    // Auto-correction may darken the primary to meet 4.5:1 against background,
+    // so L should be <= the adaptive target
+    expect(lch.L).toBeLessThanOrEqual(adaptiveL(0.55, primaryH) + 0.01);
+    expect(lch.L).toBeGreaterThan(0.3);
   });
 
   it("secondary hue uses hue-aware offset from primary", () => {
