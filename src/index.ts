@@ -1,5 +1,5 @@
 // ─── Main Function ───────────────────────────────────────────────────
-export { generateTheme } from "./generate-theme";
+export { generateTheme } from "./generate-theme.js";
 
 // ─── Types ───────────────────────────────────────────────────────────
 export type {
@@ -25,13 +25,13 @@ export type {
   Oklab,
   OKLCH,
   FontLevel,
-} from "./types";
+} from "./types.js";
 
 // ─── Preset Data (for UI pickers, iteration) ────────────────────────
-export { NATURE_PRESETS } from "./presets/nature-presets";
-export { SPACING_PRESETS } from "./presets/spacing-presets";
-export { RADIUS_PRESETS } from "./presets/radius-presets";
-export { FONT_SIZE_PRESETS } from "./presets/font-size-presets";
+export { NATURE_PRESETS } from "./presets/nature-presets.js";
+export { SPACING_PRESETS } from "./presets/spacing-presets.js";
+export { RADIUS_PRESETS } from "./presets/radius-presets.js";
+export { FONT_SIZE_PRESETS } from "./presets/font-size-presets.js";
 
 // ─── Color Math Utilities (for advanced consumers) ───────────────────
 export {
@@ -54,19 +54,19 @@ export {
   normalizeHex,
   gamutClamp,
   mix,
-} from "./color-math";
+} from "./color-math.js";
 
 // ─── Color Derivation (for consumers who want partial control) ───────
-export { deriveColors, deriveSurfaceElevation, resolveHarmonyAccents } from "./butterfly";
-export type { DeriveColorsOptions, HarmonyAccents } from "./butterfly";
-export { deriveOnColor, autoCorrectContrast } from "./on-colors";
-export { deriveStateColors, deriveAllIntentStates } from "./state-colors";
+export { deriveColors, deriveSurfaceElevation, resolveHarmonyAccents } from "./butterfly.js";
+export type { DeriveColorsOptions, HarmonyAccents } from "./butterfly.js";
+export { deriveOnColor, autoCorrectContrast } from "./on-colors.js";
+export { deriveStateColors, deriveAllIntentStates } from "./state-colors.js";
 
 // ─── Theme Adjustment & Diffing ──────────────────────────────────────
-export { adjustTheme } from "./adjust-theme";
-export type { ThemeModeOverrides, ThemeOverrides } from "./adjust-theme";
-export { diffTheme } from "./diff-theme";
-export type { FieldChange, ThemeModeDiff, ThemeDiff } from "./diff-theme";
+export { adjustTheme } from "./adjust-theme.js";
+export type { ThemeModeOverrides, ThemeOverrides } from "./adjust-theme.js";
+export { diffTheme } from "./diff-theme.js";
+export type { FieldChange, ThemeModeDiff, ThemeDiff } from "./diff-theme.js";
 
 // ─── Validation (for deserialized themes) ────────────────────────────
-export { parseThemeJSON } from "./validate";
+export { parseThemeJSON } from "./validate.js";

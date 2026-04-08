@@ -10,7 +10,7 @@ import type {
   StateColors,
   AccessibilityReport,
   ContrastEntry,
-} from "./types";
+} from "./types.js";
 
 // ─── Types ─────────────────────────────��────────────────────────────
 

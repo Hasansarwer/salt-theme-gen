@@ -1,6 +1,6 @@
-import { hexToOklch, oklchToHex, clampOklch, lighten, mix } from "./color-math";
-import { deriveOnColor, autoCorrectContrast } from "./on-colors";
-import type { OKLCH, SemanticColors, SurfaceElevation, ColorHarmony } from "./types";
+import { hexToOklch, oklchToHex, clampOklch, lighten, mix } from "./color-math.js";
+import { deriveOnColor, autoCorrectContrast } from "./on-colors.js";
+import type { OKLCH, SemanticColors, SurfaceElevation, ColorHarmony } from "./types.js";
 
 // ─── OKLCH Butterfly Rule ────────────────────────────────────────────
 // Derives all 13 base colors + 8 "on" colors from a single primary.

@@ -1,6 +1,6 @@
-import { deriveOnColor, buildAccessibilityReport } from "./on-colors";
-import { deriveSurfaceElevation } from "./butterfly";
-import { deriveAllIntentStates } from "./state-colors";
+import { deriveOnColor, buildAccessibilityReport } from "./on-colors.js";
+import { deriveSurfaceElevation } from "./butterfly.js";
+import { deriveAllIntentStates } from "./state-colors.js";
 import type {
   GeneratedTheme,
   GeneratedThemeMode,
@@ -13,7 +13,7 @@ import type {
   RadiusScale,
   FontSizeScale,
   FontLevel,
-} from "./types";
+} from "./types.js";
 
 // ─── Types ──────────────────────────────────────────────────────────
 

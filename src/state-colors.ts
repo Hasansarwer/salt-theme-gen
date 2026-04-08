@@ -1,6 +1,6 @@
-import { darken, desaturate, lighten, mix, contrastRatio } from "./color-math";
-import { autoCorrectContrast } from "./on-colors";
-import type { StateColors, IntentStates, SemanticColors } from "./types";
+import { darken, desaturate, lighten, mix, contrastRatio } from "./color-math.js";
+import { autoCorrectContrast } from "./on-colors.js";
+import type { StateColors, IntentStates, SemanticColors } from "./types.js";
 
 /**
  * Derive 4 interactive states for a single color.

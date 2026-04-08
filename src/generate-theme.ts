@@ -1,12 +1,12 @@
-import { parseColor, oklchToHex } from "./color-math";
-import { deriveColors, deriveSurfaceElevation } from "./butterfly";
-import { deriveAllIntentStates } from "./state-colors";
-import { buildAccessibilityReport } from "./on-colors";
-import { SPACING_PRESETS } from "./presets/spacing-presets";
-import { RADIUS_PRESETS } from "./presets/radius-presets";
-import { FONT_SIZE_PRESETS } from "./presets/font-size-presets";
-import { NATURE_PRESETS } from "./presets/nature-presets";
-import type { DeriveColorsOptions } from "./butterfly";
+import { parseColor, oklchToHex } from "./color-math.js";
+import { deriveColors, deriveSurfaceElevation } from "./butterfly.js";
+import { deriveAllIntentStates } from "./state-colors.js";
+import { buildAccessibilityReport } from "./on-colors.js";
+import { SPACING_PRESETS } from "./presets/spacing-presets.js";
+import { RADIUS_PRESETS } from "./presets/radius-presets.js";
+import { FONT_SIZE_PRESETS } from "./presets/font-size-presets.js";
+import { NATURE_PRESETS } from "./presets/nature-presets.js";
+import type { DeriveColorsOptions } from "./butterfly.js";
 import type {
   GenerateThemeOptions,
   GeneratedTheme,
@@ -18,7 +18,7 @@ import type {
   SpacingScale,
   FontSizeScale,
   RadiusScale,
-} from "./types";
+} from "./types.js";
 
 /**
  * Generate a complete light + dark theme from minimal input.

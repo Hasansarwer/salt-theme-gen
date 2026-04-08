@@ -1,5 +1,5 @@
-import { isValidHex } from "./color-math";
-import type { GeneratedTheme, GeneratedThemeMode } from "./types";
+import { isValidHex } from "./color-math.js";
+import type { GeneratedTheme, GeneratedThemeMode } from "./types.js";
 
 // ─── Shape Definitions ──────────────────────────────────────────────
 

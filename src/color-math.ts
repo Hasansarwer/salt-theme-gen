@@ -1,4 +1,4 @@
-import type { RGB, Oklab, OKLCH } from "./types";
+import type { RGB, Oklab, OKLCH } from "./types.js";
 
 // ─── CSS Named Colors ───────────────────────────────────────────────
 

@@ -4,8 +4,8 @@ import {
   hexToOklch,
   oklchToHex,
   clampOklch,
-} from "./color-math";
-import type { SemanticColors, AccessibilityReport, ContrastEntry } from "./types";
+} from "./color-math.js";
+import type { SemanticColors, AccessibilityReport, ContrastEntry } from "./types.js";
 
 /**
  * Derive the "on" color for a given background.
