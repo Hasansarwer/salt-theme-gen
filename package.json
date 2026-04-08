@@ -2,12 +2,14 @@
   "name": "salt-theme-gen",
   "version": "1.2.0",
   "description": "OKLCH-based design system generator — generate complete themes from a single color. Platform agnostic: React Native, React, Next.js, Node, Bun, Deno.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/index.js"
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
     }
   },
   "files": [
