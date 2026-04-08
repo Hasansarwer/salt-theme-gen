@@ -15,6 +15,7 @@
     "README.md",
     "LICENSE"
   ],
+  "sideEffects": false,
   "private": false,
   "scripts": {
     "build": "tsc",
